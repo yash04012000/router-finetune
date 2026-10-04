@@ -62,22 +62,24 @@ class Turn(BaseModel):
     role: Literal["user", "agent"]
     text: str
 
+
 class Example(BaseModel):
-    id: str                     # stable, e.g. "gen-000123" / "hand-0042"
-    intent: str                 # validated against intents.yaml
-    turns: list[Turn]           # last turn is the one being routed; >1 turn = multi-turn context
+    id: str  # stable, e.g. "gen-000123" / "hand-0042"
+    intent: str  # validated against intents.yaml
+    turns: list[Turn]  # last turn is the one being routed; >1 turn = multi-turn context
     source: Literal["synthetic", "handwritten"]
-    group_id: str               # generation seed; splits are grouped on this (PRD 2)
-    meta: dict = {}             # persona, tone, channel, length bucket, confusable_target
+    group_id: str  # generation seed; splits are grouped on this (PRD 2)
+    meta: dict = {}  # persona, tone, channel, length bucket, confusable_target
+
 
 class Prediction(BaseModel):
     example_id: str
-    approach: str               # "tfidf_lr" | "distilbert" | "llm_zeroshot" | "lora_<model>"
-    predicted: str              # an intent, or "__invalid__" if the model emitted garbage
-    confidence: float | None    # max softmax prob (calibrated where noted); None if unavailable
+    approach: str  # "tfidf_lr" | "distilbert" | "llm_zeroshot" | "lora_<model>"
+    predicted: str  # an intent, or "__invalid__" if the model emitted garbage
+    confidence: float | None  # max softmax prob (calibrated where noted); None if unavailable
     probs: dict[str, float] | None
-    latency_ms: float           # wall time for this single decision, batch size 1
-    input_tokens: int | None    # API approaches only
+    latency_ms: float  # wall time for this single decision, batch size 1
+    input_tokens: int | None  # API approaches only
     output_tokens: int | None
 ```
 

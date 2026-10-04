@@ -1,0 +1,74 @@
+# The 16 intents the router chooses between.
+#
+# description      -> one line used in the LLM prompt (PRD 4) and the data generator (PRD 2)
+# confusable_with  -> intents we EXPECT models to mix up. We generate extra "tricky" examples
+#                     near these boundaries (PRD 2) and later check whether the real confusions
+#                     match these guesses (PRD 6).
+#
+# The ORDER of this list matters: it is the row/column order of every confusion matrix,
+# and the class-index order of every trained classifier.
+
+intents:
+  - name: billing_dispute
+    description: Customer disputes a charge, was double-charged, or does not recognise a charge.
+    confusable_with: [fraud_security, refund_request]
+
+  - name: refund_request
+    description: Customer wants money back for an order or subscription period.
+    confusable_with: [return_exchange, billing_dispute]
+
+  - name: payment_method_update
+    description: Customer wants to add, change, or remove a card or other payment method.
+    confusable_with: [account_update]
+
+  - name: subscription_cancel
+    description: Customer wants to cancel their subscription or stop auto-renewal.
+    confusable_with: [subscription_change]
+
+  - name: subscription_change
+    description: Customer wants to upgrade, downgrade, or switch subscription plan.
+    confusable_with: [subscription_cancel, product_question]
+
+  - name: order_status
+    description: Customer asks where their order is, when it will arrive, or about tracking.
+    confusable_with: [damaged_or_wrong_item]
+
+  - name: return_exchange
+    description: Customer wants to send an item back or exchange it for a different size or model.
+    confusable_with: [refund_request, damaged_or_wrong_item]
+
+  - name: damaged_or_wrong_item
+    description: Customer received a broken, defective, or incorrect item.
+    confusable_with: [return_exchange, order_status]
+
+  - name: account_access
+    description: Customer cannot log in, forgot their password, or has two-factor problems.
+    confusable_with: [fraud_security, technical_issue]
+
+  - name: account_update
+    description: Customer wants to change their email, address, name, or other profile details.
+    confusable_with: [account_deletion_privacy, payment_method_update]
+
+  - name: account_deletion_privacy
+    description: Customer wants their account deleted or asks for a copy of / deletion of their data.
+    confusable_with: [account_update, subscription_cancel]
+
+  - name: technical_issue
+    description: The app or website shows an error, crashes, or a feature does not work.
+    confusable_with: [account_access]
+
+  - name: product_question
+    description: Customer asks how a product or feature works, or about availability, before buying.
+    confusable_with: [subscription_change]
+
+  - name: complaint_escalation
+    description: Customer is unhappy with service and asks for a manager, a human, or to complain formally.
+    confusable_with: [billing_dispute, refund_request]
+
+  - name: fraud_security
+    description: Customer reports a hacked account, suspicious activity, or a phishing message.
+    confusable_with: [account_access, billing_dispute]
+
+  - name: out_of_scope
+    description: Message is unrelated to customer support (chit-chat, jokes, unrelated questions).
+    confusable_with: []

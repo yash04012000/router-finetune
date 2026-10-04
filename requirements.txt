@@ -1,1 +1,7 @@
-# pin versions before first push
+# Light dependencies: enough to run the tests and `scripts.run_bench` on a laptop with no GPU.
+# Training dependencies (torch, transformers, peft, ...) live in requirements-train.txt.
+numpy==2.5.3
+scikit-learn==1.9.1
+PyYAML==6.0.3
+pytest==9.1.1
+ruff==0.16.10
