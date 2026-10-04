@@ -16,3 +16,6 @@ data/raw/
 results/*.tmp
 .DS_Store
 .idea/
+
+# generated views (rebuild with: python -m scripts.build_dashboard)
+dashboard/

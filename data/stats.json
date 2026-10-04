@@ -1,0 +1,68 @@
+{
+  "seed": 42,
+  "dropped": {
+    "duplicate": 60,
+    "conflicting_labels": 4
+  },
+  "counts": {
+    "train": 9371,
+    "val": 1053,
+    "test": 3195
+  },
+  "per_intent": {
+    "train": {
+      "account_management": 303,
+      "card_delivery_activation": 507,
+      "card_ordering": 718,
+      "card_payment_problem": 1362,
+      "card_problem": 168,
+      "cash_withdrawal": 1028,
+      "exchange_and_coverage": 832,
+      "identity_verification": 397,
+      "lost_stolen_security": 260,
+      "out_of_scope": 419,
+      "pin_passcode": 304,
+      "refunds": 298,
+      "top_up": 702,
+      "top_up_problem": 655,
+      "transfer_problem": 682,
+      "transfers": 736
+    },
+    "val": {
+      "account_management": 34,
+      "card_delivery_activation": 56,
+      "card_ordering": 81,
+      "card_payment_problem": 152,
+      "card_problem": 19,
+      "cash_withdrawal": 113,
+      "exchange_and_coverage": 94,
+      "identity_verification": 43,
+      "lost_stolen_security": 28,
+      "out_of_scope": 60,
+      "pin_passcode": 33,
+      "refunds": 33,
+      "top_up": 76,
+      "top_up_problem": 72,
+      "transfer_problem": 76,
+      "transfers": 83
+    },
+    "test": {
+      "account_management": 120,
+      "card_delivery_activation": 160,
+      "card_ordering": 280,
+      "card_payment_problem": 360,
+      "card_problem": 120,
+      "cash_withdrawal": 319,
+      "exchange_and_coverage": 320,
+      "identity_verification": 160,
+      "lost_stolen_security": 120,
+      "out_of_scope": 119,
+      "pin_passcode": 120,
+      "refunds": 80,
+      "top_up": 278,
+      "top_up_problem": 199,
+      "transfer_problem": 200,
+      "transfers": 240
+    }
+  }
+}

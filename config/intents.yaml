@@ -1,74 +1,75 @@
-# The 16 intents the router chooses between.
+# The 16 intents the router chooses between (15 banking intents + out_of_scope).
 #
-# description      -> one line used in the LLM prompt (PRD 4) and the data generator (PRD 2)
-# confusable_with  -> intents we EXPECT models to mix up. We generate extra "tricky" examples
-#                     near these boundaries (PRD 2) and later check whether the real confusions
-#                     match these guesses (PRD 6).
+# description      -> one line shown to the large model in the prompt (PRD 4)
+# confusable_with  -> our GUESS of which intents models will mix up. PRD 6 checks the guess
+#                     against the real confusion matrix.
 #
-# The ORDER of this list matters: it is the row/column order of every confusion matrix,
+# The ORDER of this list matters: it is the row/column order of every confusion matrix
 # and the class-index order of every trained classifier.
+#
+# Where the data comes from: see config/banking77_groups.yaml and data/DATACARD.md.
 
 intents:
-  - name: billing_dispute
-    description: Customer disputes a charge, was double-charged, or does not recognise a charge.
-    confusable_with: [fraud_security, refund_request]
+  - name: card_ordering
+    description: Customer wants to order, get, or renew a physical, spare, virtual, or disposable card.
+    confusable_with: [card_delivery_activation]
 
-  - name: refund_request
-    description: Customer wants money back for an order or subscription period.
-    confusable_with: [return_exchange, billing_dispute]
+  - name: card_delivery_activation
+    description: Customer asks where their card is, when it will arrive, or how to activate or link it.
+    confusable_with: [card_ordering, card_problem]
 
-  - name: payment_method_update
-    description: Customer wants to add, change, or remove a card or other payment method.
-    confusable_with: [account_update]
+  - name: card_problem
+    description: A card, contactless payment, or virtual card is not working.
+    confusable_with: [card_delivery_activation, lost_stolen_security]
 
-  - name: subscription_cancel
-    description: Customer wants to cancel their subscription or stop auto-renewal.
-    confusable_with: [subscription_change]
+  - name: lost_stolen_security
+    description: Card or phone was lost or stolen, or the card may be compromised.
+    confusable_with: [card_problem, pin_passcode]
 
-  - name: subscription_change
-    description: Customer wants to upgrade, downgrade, or switch subscription plan.
-    confusable_with: [subscription_cancel, product_question]
+  - name: pin_passcode
+    description: Customer wants to change their PIN, has a blocked PIN, or forgot their passcode.
+    confusable_with: [card_problem, lost_stolen_security]
 
-  - name: order_status
-    description: Customer asks where their order is, when it will arrive, or about tracking.
-    confusable_with: [damaged_or_wrong_item]
+  - name: identity_verification
+    description: Questions about verifying identity or source of funds, or failing verification.
+    confusable_with: [account_management]
 
-  - name: return_exchange
-    description: Customer wants to send an item back or exchange it for a different size or model.
-    confusable_with: [refund_request, damaged_or_wrong_item]
+  - name: account_management
+    description: Customer wants to edit personal details, close their account, or asks about age limits.
+    confusable_with: [identity_verification]
 
-  - name: damaged_or_wrong_item
-    description: Customer received a broken, defective, or incorrect item.
-    confusable_with: [return_exchange, order_status]
+  - name: top_up
+    description: Questions about adding money to the account by card, bank transfer, cash, cheque, or Apple/Google Pay.
+    confusable_with: [top_up_problem, transfers]
 
-  - name: account_access
-    description: Customer cannot log in, forgot their password, or has two-factor problems.
-    confusable_with: [fraud_security, technical_issue]
+  - name: top_up_problem
+    description: A top-up failed, was reverted, is pending, or the balance did not update after a deposit.
+    confusable_with: [top_up, transfer_problem]
 
-  - name: account_update
-    description: Customer wants to change their email, address, name, or other profile details.
-    confusable_with: [account_deletion_privacy, payment_method_update]
+  - name: transfers
+    description: Questions about sending or receiving bank transfers, their timing, fees, or cancelling one.
+    confusable_with: [transfer_problem, top_up]
 
-  - name: account_deletion_privacy
-    description: Customer wants their account deleted or asks for a copy of / deletion of their data.
-    confusable_with: [account_update, subscription_cancel]
+  - name: transfer_problem
+    description: A transfer was declined, failed, is pending, or the recipient did not receive the money.
+    confusable_with: [transfers, top_up_problem]
 
-  - name: technical_issue
-    description: The app or website shows an error, crashes, or a feature does not work.
-    confusable_with: [account_access]
+  - name: card_payment_problem
+    description: A card payment was declined, pending, reverted, charged twice, wrongly charged, or not recognised.
+    confusable_with: [refunds, cash_withdrawal]
 
-  - name: product_question
-    description: Customer asks how a product or feature works, or about availability, before buying.
-    confusable_with: [subscription_change]
+  - name: refunds
+    description: Customer wants a refund or says a refund has not shown up.
+    confusable_with: [card_payment_problem]
 
-  - name: complaint_escalation
-    description: Customer is unhappy with service and asks for a manager, a human, or to complain formally.
-    confusable_with: [billing_dispute, refund_request]
+  - name: cash_withdrawal
+    description: Problems or questions about ATM cash withdrawals, fees, wrong amounts, or a swallowed card.
+    confusable_with: [card_payment_problem, exchange_and_coverage]
 
-  - name: fraud_security
-    description: Customer reports a hacked account, suspicious activity, or a phishing message.
-    confusable_with: [account_access, billing_dispute]
+  - name: exchange_and_coverage
+    description: Questions about exchange rates and fees, supported currencies, countries, and card types.
+    confusable_with: [cash_withdrawal, card_payment_problem]
 
   - name: out_of_scope
-    description: Message is unrelated to customer support (chit-chat, jokes, unrelated questions).
+    description: Message is unrelated to banking or customer support (general knowledge, chit-chat, other topics).
     confusable_with: []
