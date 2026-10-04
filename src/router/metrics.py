@@ -1,4 +1,4 @@
-"""Metrics, written out by hand so the maths is visible. See docs/MATH.md for the explanations.
+"""Metrics, written out by hand so the maths is visible. See docs/math/metrics.md for the explanations.
 
 Everything starts from two lists of the same length: the true labels and the predicted labels.
 """
@@ -78,7 +78,7 @@ def bootstrap_ci(metric, y_true, y_pred, n_resamples: int = 1000, seed: int = 0,
 
     Idea: our test set is just one random sample of possible customer messages. Re-draw
     a test set of the same size WITH replacement, many times, and see how much the score moves.
-    The middle 95% of those scores is the interval. See docs/MATH.md.
+    The middle 95% of those scores is the interval. See docs/math/metrics.md.
     """
     rng = np.random.default_rng(seed)
     n = len(y_true)

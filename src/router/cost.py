@@ -1,4 +1,4 @@
-"""Cost per 1,000 routing decisions. See docs/MATH.md for the formulas.
+"""Cost per 1,000 routing decisions. See docs/math/cost.md for the formulas.
 
 Two kinds of model, two ways to be charged:
   API model     -> you pay per token, so cost = tokens used x price per token
