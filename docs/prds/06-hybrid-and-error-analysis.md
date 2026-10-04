@@ -84,6 +84,5 @@ tests/test_hybrid.py, test_errors.py
 
 1. Confidence signal: calibrated max-prob (recommended default) vs margin (top1 − top2) vs
    entropy. Cheap to compute all three and plot; pick the best on val.
-2. Should the realism slice get its own hybrid curve? Recommend yes, small inset or table row —
-   if the small model's confidence is miscalibrated on realistic text, that's the most important
-   limitation to report.
+2. Per-intent view: small intents (80-120 test messages) get noisy numbers (about ±4-5 points).
+   Show counts beside every per-intent figure.

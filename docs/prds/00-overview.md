@@ -5,8 +5,8 @@ Update the status column as work lands.
 
 | # | PRD | Covers | Est. | Status |
 |---|-----|--------|------|--------|
-| 1 | [01-foundations.md](01-foundations.md) | Intent taxonomy, shared schemas, predictions-file contract, metrics + cost model, pinned env, CI | 1 day | Not started |
-| 2 | [02-dataset.md](02-dataset.md) | Synthetic generation script, dedup, group-aware splits, frozen test set, hand-written realism slice, data card | 2 days | Not started |
+| 1 | [01-foundations.md](01-foundations.md) | Intent taxonomy, shared schemas, predictions-file contract, metrics + cost model, pinned env, CI | 1 day | Done |
+| 2 | [02-dataset.md](02-dataset.md) | Public data only (Banking77 merged to 15 intents + CLINC150 out-of-scope), dedup, stratified splits, frozen test set, data card, dataset dashboard | 1 day | Done |
 | 3 | [03-classical-baselines.md](03-classical-baselines.md) | TF-IDF + logistic regression, fine-tuned DistilBERT | 1.5 days | Not started |
 | 4 | [04-large-model-zero-shot.md](04-large-model-zero-shot.md) | Prompted large model via LiteLLM, structured output, cache/replay, token-based cost | 1.5 days | Not started |
 | 5 | [05-small-model-lora.md](05-small-model-lora.md) | LoRA/QLoRA fine-tune of a small open model, calibration, adapter publish, one-command inference | 3 days | Not started |
@@ -36,14 +36,14 @@ command and checks the acceptance boxes.
 
 | Requirement / acceptance criterion | PRD |
 |---|---|
-| 5,000+ examples, 10-20 intents, generation script published | 2 |
+| 5,000+ examples, 10-20 intents, build script published | 2 |
 | Large model zero-shot / small LoRA / classical baseline | 4 / 5 / 3 |
 | Accuracy, macro F1, p95 latency, cost per 1k, confusion matrix | 1 (functions), 3-5 (inputs), 7 (report) |
 | Confused intent pairs; threshold + fallback; accuracy/cost curve | 6 |
 | Training script, hyperparameters, seed, hardware | 5 (and 3 for DistilBERT) |
 | Adapter weights + one-command inference | 5 |
 | Identical held-out test set | 2 (frozen + hashed), 1 (loader enforces hash) |
-| Honest limitations incl. dataset realism | 2 (realism slice), 7 (write-up) |
+| Honest limitations incl. dataset realism | 2 (data card limitations), 7 (write-up) |
 
 ## Cross-cutting decisions
 

@@ -30,13 +30,13 @@ trade-offs and "what changes at 10x", and an honest limitations section.
 
 ### Headline results table (README, first screen)
 
-| Approach | Accuracy (95% CI) | Macro F1 | p95 latency | Cost / 1k decisions | Realism-slice acc |
-|---|---|---|---|---|---|
-| **Hybrid: LoRA + fallback @ chosen t** | | | | | |
-| Large model, zero-shot | | | | | |
-| Small model, LoRA | | | | | |
-| DistilBERT | | | | | |
-| TF-IDF + LR | | | | | |
+| Approach | Accuracy (95% CI) | Macro F1 | p95 latency | Cost / 1k decisions |
+|---|---|---|---|---|
+| **Hybrid: LoRA + fallback @ chosen t** | | | | |
+| Large model, zero-shot | | | | |
+| Small model, LoRA | | | | |
+| DistilBERT | | | | |
+| TF-IDF + LR | | | | |
 
 Hybrid row first ("lead with it"), with the fallback rate in the row label. Directly under the
 table: the hybrid curve figure and one sentence with the resume-line numbers.
@@ -51,9 +51,8 @@ times). 6. Limitations.
 
 ### Limitations section (must cover)
 
-- Synthetic data: LLM-written, cleaner and more on-label than real traffic; gap shown by the
-  realism-slice column. The realism slice is small and written by one person.
-- Generator/evaluator overlap mitigated (different families) but not eliminated.
+- Data realism: crowd-written single-turn banking queries (Banking77 + CLINC150), cleaner than real
+  traffic, one domain, paraphrase overlap between train and test. See data/DATACARD.md.
 - Single-label assumption; real messages are often multi-intent.
 - API latency measured from one location over a short window; prices are snapshots with dates.
 - Self-hosted cost depends on the $/GPU-hour assumption and on achieving batched throughput.

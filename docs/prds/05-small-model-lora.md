@@ -22,7 +22,7 @@ fit that card.
 - Temperature-scaled confidences (PRD 3's `calibrate.py`), fit on val.
 - Adapter + head pushed to the Hugging Face Hub; `scripts/route.py "message"` downloads and
   predicts in one command.
-- Predictions on val, test and realism slices; batch-1 latency and batched throughput measured.
+- Predictions on val and test; batch-1 latency and batched throughput measured.
 
 ## Non-goals
 

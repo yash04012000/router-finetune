@@ -11,8 +11,8 @@ file → compute metrics — before any money or GPU time is spent.
 
 ## Goals
 
-- `tfidf_lr`: scikit-learn pipeline, small hyperparameter search on val, predictions on val,
-  test and realism slice.
+- `tfidf_lr`: scikit-learn pipeline, small hyperparameter search on val, predictions on val
+  and test.
 - `distilbert`: `distilbert-base-uncased` fine-tuned for sequence classification, early stopping
   on val macro F1, same three prediction sets.
 - Both emit calibrated-ish confidences so they can also be evaluated as the "small model" in the
@@ -48,7 +48,7 @@ budget so the routed message is never cut. All non-LLM approaches use this one f
 
 ### Shared runner
 
-`scripts/predict.py --approach tfidf_lr --splits val,test,realism` loads a trained model, runs
+`scripts/predict.py --approach tfidf_lr --splits val,test` loads a trained model, runs
 inference one example at a time (timing each), and writes `results/predictions/...jsonl` +
 `.meta.json` via the PRD 1 writer. A separate `scripts/train_<approach>.py` does training and
 writes `results/training/<approach>.json` (hyperparameters, seed, per-epoch val metrics,

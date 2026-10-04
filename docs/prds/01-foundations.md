@@ -64,12 +64,12 @@ class Turn(BaseModel):
 
 
 class Example(BaseModel):
-    id: str  # stable, e.g. "gen-000123" / "hand-0042"
+    id: str  # stable, derived from the text, e.g. "banking77-0019cec4b2"
     intent: str  # validated against intents.yaml
     turns: list[Turn]  # last turn is the one being routed; >1 turn = multi-turn context
-    source: Literal["synthetic", "handwritten"]
-    group_id: str  # generation seed; splits are grouped on this (PRD 2)
-    meta: dict = {}  # persona, tone, channel, length bucket, confusable_target
+    source: str  # "banking77" or "clinc150"
+    group_id: str = ""  # unused for public data (kept for datasets with paraphrase groups)
+    meta: dict = {}  # e.g. original_label (the Banking77 label before merging)
 
 
 class Prediction(BaseModel):

@@ -15,7 +15,7 @@ costing. Responses are cached so the numbers reproduce without an API key.
   with descriptions; no examples (zero-shot, per the spec).
 - Structured output: the model returns exactly one intent label (JSON `{"intent": "..."}` or
   provider-native structured output / tool call when available).
-- Run on val, test and realism slices; capture input/output tokens and wall latency per call.
+- Run on val and test; capture input/output tokens and wall latency per call.
 - Disk cache keyed on (model, prompt version, example id, params) → committed, so re-runs and CI
   never call the API.
 - Optional second model (a cheaper "mid-tier" hosted model) as an extra row, if budget allows.
@@ -60,7 +60,7 @@ labelled.
 ```
 config/prompts/zeroshot_v1.txt
 src/router/llm/client.py, parse.py, cache.py
-scripts/run_llm.py --model <id> --splits val,test,realism
+scripts/run_llm.py --model <id> --splits val,test
 results/llm_cache/<model>/<hash>.json
 tests/test_llm_parse.py, test_llm_cache.py
 ```
@@ -82,6 +82,9 @@ tests/test_llm_parse.py, test_llm_cache.py
 1. Which large model. Recommend a current frontier-tier hosted model for the main row (the
    "expensive default" the story argues against), and if budget allows a mid-tier model as a
    second row — that comparison is often more interesting to cost-sensitive teams. Must be a
-   different family from the PRD 2 generator.
-2. Budget: ~2,100 calls (val + test + realism) × ~600 input tokens — a few dollars on a frontier
-   model; fine to run twice for the latency check.
+   different family from any model used to build the data (none now, data is public).
+2. Budget: ~4,250 calls (val 1,053 + test 3,195) × ~600 input tokens. **No paid API budget is
+   available**, so decide before starting this PRD: a free-tier hosted model, or a local model
+   through Ollama (an 8B-class instruct model fits an 8 GB GPU quantized). Cost per 1k is then
+   computed from tokens at the model's published list price, and clearly labelled as such.
+   To keep spend at zero the test-set run can use a fixed random subsample (e.g. 1,000) if rate limits bite.

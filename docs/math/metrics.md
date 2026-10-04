@@ -144,7 +144,7 @@ confidence interval**.
 
 ```python
 for _ in range(1000):
-    idx = rng.integers(0, n, size=n)         # n random positions, repeats allowed
+    idx = rng.integers(0, n, size=n)  # n random positions, repeats allowed
     scores.append(metric(y_true[idx], y_pred[idx]))
 low, high = percentile(scores, 2.5), percentile(scores, 97.5)
 ```
