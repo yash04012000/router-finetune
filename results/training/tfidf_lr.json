@@ -1,0 +1,40 @@
+{
+  "approach": "tfidf_lr",
+  "grid": [
+    {
+      "C": 0.5,
+      "val_macro_f1": 0.9108898603351765
+    },
+    {
+      "C": 1,
+      "val_macro_f1": 0.9217770439056041
+    },
+    {
+      "C": 2,
+      "val_macro_f1": 0.9280205968738328
+    },
+    {
+      "C": 4,
+      "val_macro_f1": 0.9308322308167756
+    },
+    {
+      "C": 8,
+      "val_macro_f1": 0.9332186394851929
+    },
+    {
+      "C": 16,
+      "val_macro_f1": 0.9357229486346459
+    },
+    {
+      "C": 32,
+      "val_macro_f1": 0.9360328128391768
+    }
+  ],
+  "chosen_C": 32,
+  "n_train": 9371,
+  "n_val": 1053,
+  "wall_seconds": 27.6,
+  "hardware": "CPU (Intel64 Family 6 Model 183 Stepping 1, GenuineIntel)",
+  "sklearn": "1.9.1",
+  "seed": "none (LogisticRegression lbfgs is deterministic)"
+}
