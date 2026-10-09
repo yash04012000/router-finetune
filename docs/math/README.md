@@ -9,6 +9,7 @@ worked example with real numbers, and a pointer to the code.
 | [metrics.md](metrics.md) | Accuracy, precision, recall, F1, macro F1, confusion matrix, percentile latency, bootstrap confidence intervals | `src/router/metrics.py` | Written |
 | [cost.md](cost.md) | Cost per 1,000 decisions for API, self-hosted and hybrid setups | `src/router/cost.py` | Written |
 | [data-splits.md](data-splits.md) | Train/val/test, leakage, stratified splits, class imbalance, how test-set size sets precision | `src/router/dataset_build.py`, `splits.py` | Written |
+| [tfidf-logreg.md](tfidf-logreg.md) | TF-IDF, softmax, cross-entropy, regularisation (`C`), class weights | `src/router/baselines/tfidf.py` | Written |
 | calibration.md | Softmax, temperature scaling, negative log-likelihood, expected calibration error | `src/router/calibrate.py` | PRD 3 |
 | lora.md | Why low-rank adapters work, parameter count, the `alpha / r` scale, what QLoRA changes | `src/router/lora_model.py` | PRD 4 |
 | fine-tuning.md | Cross-entropy loss, gradient descent, learning rate, warm-up, epochs, overfitting | training scripts | PRD 3 / 4 |
