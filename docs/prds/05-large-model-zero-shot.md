@@ -65,6 +65,11 @@ results/llm_cache/<model>/<hash>.json
 tests/test_llm_parse.py, test_llm_cache.py
 ```
 
+### Playground
+
+Register this approach in `src/router/serving.py` (loader returning `text -> Result`) so it shows
+up in `python -m scripts.serve` next to the other models and in the Scoreboard tab.
+
 ## Testing plan
 
 - Parsing: exact label, label with trailing punctuation, JSON-wrapped label, a label for a

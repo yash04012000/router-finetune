@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Router Playground</title>
+<style>
+  :root {
+    --bg: #fafaf9; --card: #ffffff; --text: #1c1917; --muted: #6b6560; --line: #e7e5e4;
+    --accent: #2563eb; --good: #059669; --bad: #dc2626; --warn: #d97706;
+    --tfidf_lr: #2563eb; --distilbert: #d97706; --lora_qwen: #059669; --llm_zeroshot: #7c3aed; --hybrid: #db2777;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #151413; --card: #1f1d1b; --text: #f2efec; --muted: #a8a29e; --line: #353230;
+            --accent: #60a5fa; --good: #34d399; --bad: #f87171; --warn: #fbbf24;
+            --tfidf_lr: #60a5fa; --distilbert: #fbbf24; --lora_qwen: #34d399; --llm_zeroshot: #a78bfa; --hybrid: #f472b6; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, sans-serif; }
+  main { max-width: 1000px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 6px; }
+  p.sub { color: var(--muted); margin: 0 0 12px; }
+  .small { font-size: 13px; color: var(--muted); }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin: 16px 0; }
+  .tab { font: inherit; background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 14px; cursor: pointer; color: var(--muted); }
+  .tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+  button, textarea, input { font: inherit; color: var(--text); }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; }
+  textarea { width: 100%; min-height: 84px; resize: vertical; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); }
+  textarea:focus-visible, button:focus-visible, label:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+  .primary { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 8px 18px; cursor: pointer; font-weight: 600; }
+  @media (prefers-color-scheme: dark) { .primary { color: #0b0b0b; } }
+  .primary:disabled { opacity: .5; cursor: default; }
+  .chip { border: 1px solid var(--line); background: var(--card); border-radius: 99px; padding: 3px 12px; cursor: pointer; font-size: 13px; max-width: 100%; text-align: left; }
+  .chip:hover { border-color: var(--accent); }
+  .chip.model { display: inline-flex; align-items: center; gap: 6px; border-radius: 8px; padding: 6px 10px; }
+  .chip.model input { accent-color: var(--accent); margin: 0; }
+  .chip.off { opacity: .55; cursor: not-allowed; border-style: dashed; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; flex: none; }
+  .tag { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
+  .results { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 16px; }
+  .rcard { background: var(--card); border: 1px solid var(--line); border-top: 4px solid var(--c, var(--accent)); border-radius: 10px; padding: 12px 16px; }
+  .rcard h3 { margin: 0; font-size: 13px; color: var(--muted); font-weight: 600; }
+  .answer { font-size: 20px; font-weight: 700; margin: 4px 0 0; word-break: break-word; }
+  .desc { color: var(--muted); font-size: 13px; margin: 2px 0 8px; }
+  .meter { display: grid; grid-template-columns: 1fr 52px; gap: 8px; align-items: center; margin: 3px 0; font-size: 13px; }
+  .meter .name { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 8px; }
+  .bar { height: 10px; border-radius: 3px; background: var(--line); overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--c, var(--accent)); }
+  .bar.dim i { opacity: .45; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .banner { margin-top: 16px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); }
+  .ok { color: var(--good); font-weight: 600; } .no { color: var(--bad); font-weight: 600; }
+  .err { color: var(--bad); margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  tr:last-child td { border-bottom: 0; }
+  td.num, th.num { text-align: right; }
+  .scroll { overflow-x: auto; }
+  details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Router playground</h1>
+  <p class="sub">Type a customer message, pick models, and see how each one routes it. Every model we build shows up here.</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-play" aria-selected="true">Playground</button>
+    <button class="tab" role="tab" id="tab-score" aria-selected="false">Scoreboard</button>
+  </div>
+
+  <section id="view-play">
+    <div class="panel">
+      <div class="small" style="margin-bottom:6px">Models</div>
+      <div class="row" id="models" style="margin-top:0"></div>
+
+      <div class="small" style="margin:14px 0 6px"><label for="text">Customer message</label></div>
+      <textarea id="text" maxlength="1000" placeholder="e.g. My card was declined at the shop but I have money in my account"></textarea>
+      <div class="row">
+        <button class="primary" id="run">Route it</button>
+        <span class="small">Ctrl + Enter</span>
+        <span style="flex:1"></span>
+        <button class="chip" id="more">New random examples</button>
+      </div>
+      <div class="small" style="margin-top:10px">Try a real test message (its true intent is hidden until you run it):</div>
+      <div class="row" id="examples" style="margin-top:6px"></div>
+    </div>
+    <div id="error" class="err" role="alert"></div>
+    <div id="banner"></div>
+    <div class="results" id="results" aria-live="polite"></div>
+  </section>
+
+  <section id="view-score" class="hidden">
+    <p class="sub">Every approach scored on the same frozen test split, from the committed prediction files. Models appear here as their PRD lands.</p>
+    <div class="panel scroll"><table id="score"></table></div>
+    <h2>Intents</h2>
+    <p class="sub">What each answer means.</p>
+    <div class="panel scroll"><table id="intents"></table></div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const pct = (x) => (x * 100).toFixed(1) + "%";
+const ms = (x) => (x < 10 ? x.toFixed(2) : x.toFixed(1)) + " ms";
+let models = [], intents = {}, gold = null;
+
+// tiny element builder: text goes in as text (never HTML), so model output can't inject markup
+function h(tag, props = {}, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === "style") el.setAttribute("style", v);
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (k in el) el[k] = v; else el.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) if (kid != null) el.append(kid.nodeType ? kid : document.createTextNode(kid));
+  return el;
+}
+const api = async (path, opts) => {
+  const r = await fetch(path, opts), data = await r.json();
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+};
+const color = (name) => `var(--${name})`;
+
+// ---------- tabs ----------
+function show(tab) {
+  for (const t of ["play", "score"]) {
+    $("view-" + t).classList.toggle("hidden", t !== tab);
+    $("tab-" + t).setAttribute("aria-selected", t === tab);
+  }
+  if (tab === "score") loadScoreboard();
+}
+$("tab-play").onclick = () => show("play");
+$("tab-score").onclick = () => show("score");
+
+// ---------- model picker ----------
+function renderModels() {
+  $("models").replaceChildren(...models.map((m) => {
+    const box = h("input", { type: "checkbox", value: m.name, disabled: !m.available, checked: m.available });
+    return h("label", { class: "chip model" + (m.available ? "" : " off"), title: m.description },
+      box, h("span", { class: "dot", style: `background:${color(m.name)}` }), m.label,
+      m.available ? h("span", { class: "tag" }, m.kind) : h("span", { class: "tag" }, "coming in " + m.planned_in));
+  }));
+}
+const selected = () => [...document.querySelectorAll("#models input:checked")].map((i) => i.value);
+
+// ---------- examples ----------
+async function loadExamples() {
+  const ex = await api("/api/examples?n=6");
+  $("examples").replaceChildren(...ex.map((e) => h("button", { class: "chip", onclick: () => {
+    $("text").value = e.text; gold = e.intent; $("text").focus();
+  } }, e.text.length > 70 ? e.text.slice(0, 68) + "…" : e.text)));
+}
+$("more").onclick = loadExamples;
+$("text").addEventListener("input", () => { gold = null; });  // editing the text drops the remembered true intent
+
+// ---------- run ----------
+function meter(label, p, name, dim) {
+  return h("div", { class: "meter", style: `--c:${color(name)}` },
+    label ? h("div", { class: "name" }, h("span", {}, label)) : null,
+    h("div", { class: "bar" + (dim ? " dim" : "") }, h("i", { style: `width:${(p * 100).toFixed(1)}%` })),
+    h("div", { class: "num" }, pct(p)));
+}
+function resultCard(r) {
+  const info = models.find((m) => m.name === r.model) || {};
+  const conf = r.confidence;
+  return h("article", { class: "rcard", style: `--c:${color(r.model)}` },
+    h("h3", {}, info.label || r.model, " · ", ms(r.latency_ms)),
+    h("p", { class: "answer" }, r.intent),
+    h("p", { class: "desc" }, intents[r.intent] || ""),
+    conf == null ? h("div", { class: "small" }, "This model does not report a confidence.") : meter("confidence", conf, r.model),
+    h("div", { class: "small", style: "margin-top:8px" }, "Top choices"),
+    r.top.map((t, i) => meter(t.intent, t.prob, r.model, i > 0)));
+}
+async function run() {
+  const text = $("text").value.trim(), chosen = selected();
+  $("error").textContent = ""; $("banner").replaceChildren();
+  if (!text) { $("error").textContent = "Type a message first."; return; }
+  if (!chosen.length) { $("error").textContent = "Pick at least one model."; return; }
+  $("run").disabled = true;
+  try {
+    const out = await api("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, models: chosen }) });
+    $("results").replaceChildren(...out.results.map(resultCard));
+    const notes = [];
+    if (out.results.length > 1) {
+      const answers = new Set(out.results.map((r) => r.intent));
+      notes.push(answers.size === 1 ? h("span", {}, h("b", { class: "ok" }, "All models agree: "), [...answers][0])
+        : h("span", {}, h("b", { class: "no" }, "Models disagree: "), [...answers].join(" · ")));
+    }
+    if (gold) {
+      const right = out.results.filter((r) => r.intent === gold).map((r) => (models.find((m) => m.name === r.model) || {}).label);
+      notes.push(h("span", {}, "True intent: ", h("b", {}, gold), " — correct: ", right.length ? right.join(", ") : h("span", { class: "no" }, "none")));
+    }
+    if (Object.keys(out.errors).length) notes.push(h("span", { class: "no" }, Object.values(out.errors).join("; ")));
+    if (notes.length) $("banner").replaceChildren(h("div", { class: "banner" }, notes.map((n) => h("div", {}, n))));
+  } catch (e) { $("error").textContent = e.message; }
+  $("run").disabled = false;
+}
+$("run").onclick = run;
+$("text").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) run(); });
+
+// ---------- scoreboard ----------
+async function loadScoreboard() {
+  const rows = await api("/api/scoreboard");
+  const scored = new Map(rows.map((r) => [r.approach, r]));
+  const head = h("tr", {}, h("th", {}, "Model"), h("th", {}, "Accuracy"), h("th", { class: "num" }, "Macro F1"),
+    h("th", { class: "num" }, "p50"), h("th", { class: "num" }, "p95"), h("th", {}, "Biggest mix-ups"));
+  const body = models.map((m) => {
+    const r = scored.get(m.name);
+    if (!r) return h("tr", {}, h("td", {}, h("span", { class: "dot", style: `background:${color(m.name)}` }), " ", m.label),
+      h("td", { colSpan: 5, class: "small" }, "Not evaluated yet — " + m.planned_in));
+    return h("tr", {},
+      h("td", {}, h("span", { class: "dot", style: `background:${color(m.name)}` }), " ", m.label),
+      h("td", { style: "min-width:160px" }, meter("", r.accuracy, m.name)),
+      h("td", { class: "num" }, r.macro_f1.toFixed(3)), h("td", { class: "num" }, ms(r.p50_ms)), h("td", { class: "num" }, ms(r.p95_ms)),
+      h("td", {}, h("details", {}, h("summary", {}, `top ${r.confusions.length}`),
+        r.confusions.map((c) => h("div", { class: "small" }, `${c.true} → ${c.predicted}: ${c.count}`)))));
+  });
+  $("score").replaceChildren(h("thead", {}, head), h("tbody", {}, body));
+  $("intents").replaceChildren(...Object.entries(intents).map(([n, d]) => h("tr", {}, h("td", {}, h("b", {}, n)), h("td", { class: "small" }, d))));
+}
+
+// ---------- start ----------
+(async () => {
+  try {
+    models = await api("/api/models");
+    for (const i of await api("/api/intents")) intents[i.name] = i.description;
+    renderModels(); await loadExamples();
+  } catch (e) { $("error").textContent = "Could not reach the server: " + e.message; }
+})();
+</script>
+</body>
+</html>

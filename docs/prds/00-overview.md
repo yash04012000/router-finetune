@@ -56,4 +56,10 @@ command and checks the acceptance boxes.
 - **Thresholds and calibration are fit on val, reported on test.** Never the other way round.
 - **Prices are config, not code.** `config/pricing.yaml` holds per-token API prices and the $/GPU-hour
   assumption, each with a source URL and the date it was read.
+- **One playground for every model.** `python -m scripts.serve` opens a local web page (`ui/playground.html`)
+  where you type a message and see every available model's answer, confidence and latency side by
+  side, plus a Scoreboard tab scored from the committed predictions files. Each approach is one
+  entry in `src/router/serving.py` (a loader returning `text -> Result`); unbuilt ones are already
+  listed greyed out. Every PRD that adds a model (3 DistilBERT, 4 LoRA, 5 large model, 6 hybrid)
+  registers it there as part of its acceptance criteria.
 - **Commits:** no AI attribution trailers (same preference as the rest of this portfolio).

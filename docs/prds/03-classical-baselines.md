@@ -70,6 +70,11 @@ scripts/train_tfidf.py, train_distilbert.py, predict.py
 tests/test_format.py, test_tfidf.py, test_calibrate.py, test_distilbert.py (torch-marked)
 ```
 
+### Playground
+
+`python -m scripts.serve` (see PRD overview). TF-IDF is registered in `src/router/serving.py`;
+DistilBERT adds its own loader there when it is trained.
+
 ## Testing plan
 
 - `render`: left-truncation keeps the final user turn intact; single-turn examples unchanged.

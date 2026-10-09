@@ -93,6 +93,11 @@ scripts/train_lora.py, predict.py (extended), route.py, push_to_hub.py
 tests/test_lora_model.py (torch-marked; uses a tiny random model, e.g. a hf-internal-testing checkpoint)
 ```
 
+### Playground
+
+Register this approach in `src/router/serving.py` (loader returning `text -> Result`) so it shows
+up in `python -m scripts.serve` next to the other models and in the Scoreboard tab.
+
 ## Testing plan
 
 - Tiny-model smoke test: one training step on 8 examples; save → load round-trip gives

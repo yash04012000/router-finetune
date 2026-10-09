@@ -67,6 +67,11 @@ results/figures/hybrid_curve.png, confusion_<approach>.png, risk_coverage.png
 tests/test_hybrid.py, test_errors.py
 ```
 
+### Playground
+
+Register this approach in `src/router/serving.py` (loader returning `text -> Result`) so it shows
+up in `python -m scripts.serve` next to the other models and in the Scoreboard tab.
+
 ## Testing plan
 
 - Threshold 0 → identical to small model; threshold > 1 → identical to large model (all
