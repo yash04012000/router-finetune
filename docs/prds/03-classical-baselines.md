@@ -1,6 +1,6 @@
 # PRD 3 — Classical baselines: TF-IDF + logistic regression, fine-tuned DistilBERT
 
-Status: In progress (TF-IDF done, DistilBERT next) · Depends on: PRDs 1-2 · Blocks: PRD 7 (and proves the pipeline for 4-6)
+Status: 3A TF-IDF done; 3B DistilBERT is split into nine small steps in [03-distilbert/](03-distilbert/00-index.md) · Depends on: PRDs 1-2 · Blocks: PRD 7 (and proves the pipeline for 4-6)
 
 ## Summary
 
@@ -42,6 +42,9 @@ Truncation to the token budget is done by the tokenizer (`truncation_side="left"
 - Model saved with joblib to `models/tfidf_lr.joblib` (7 MB, committed).
 
 ### DistilBERT — `src/router/baselines/distilbert.py`
+
+> **Superseded by the step-by-step plan in [03-distilbert/00-index.md](03-distilbert/00-index.md)** (nine small
+> learning steps, 3.1 to 3.9). The summary below is the end state those steps build up to.
 
 - HF `Trainer`, max_len 128, lr 5e-5, batch 32, up to 5 epochs, warmup 10%, weight decay 0.01,
   early stopping (patience 1) on val macro F1, seed 42, fp16 on the RTX 4060 Ti.

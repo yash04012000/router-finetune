@@ -7,7 +7,7 @@ Update the status column as work lands.
 |---|-----|--------|------|--------|
 | 1 | [01-foundations.md](01-foundations.md) | Intent taxonomy, shared schemas, predictions-file contract, metrics + cost model, pinned env, CI | 1 day | Done |
 | 2 | [02-dataset.md](02-dataset.md) | Public data only (Banking77 merged to 15 intents + CLINC150 out-of-scope), dedup, stratified splits, frozen test set, data card, dataset dashboard | 1 day | Done |
-| 3 | [03-classical-baselines.md](03-classical-baselines.md) | TF-IDF + logistic regression, fine-tuned DistilBERT | 1.5 days | In progress (TF-IDF done) |
+| 3 | [03-classical-baselines.md](03-classical-baselines.md) | TF-IDF + logistic regression, fine-tuned DistilBERT | 1.5 days | 3A TF-IDF done. 3B DistilBERT in nine small steps: [03-distilbert/](03-distilbert/00-index.md) |
 | 4 | [04-small-model-lora.md](04-small-model-lora.md) | LoRA/QLoRA fine-tune of a small open model, calibration, adapter publish, one-command inference | 3 days | Not started |
 | 5 | [05-large-model-zero-shot.md](05-large-model-zero-shot.md) | Prompted large model via LiteLLM, structured output, cache/replay, token-based cost | 1.5 days | Not started |
 | 6 | [06-hybrid-and-error-analysis.md](06-hybrid-and-error-analysis.md) | Confidence threshold + fallback sweep, accuracy/cost curve, confused-pair analysis | 1.5 days | Not started |
