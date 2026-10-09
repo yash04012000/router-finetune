@@ -8,10 +8,13 @@ doesn't match. A one-character edit to test.jsonl changes the hash completely.
 
 import hashlib
 import json
+import logging
 from pathlib import Path
 
 from router.jsonl import read_examples
 from router.schema import Example, Prediction
+
+logger = logging.getLogger("router.splits")
 
 DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 LOCK_FILE_NAME = "splits.lock.json"
@@ -40,6 +43,7 @@ def load_split(name: str, data_dir: Path = DATA_DIR) -> list[Example]:
             f"{path} has changed since it was frozen (expected sha256 {lock[name][:12]}..., "
             f"got {actual[:12]}...). Scores would not be comparable with earlier runs."
         )
+    logger.debug("split '%s' verified against %s (sha256 %s...)", name, LOCK_FILE_NAME, actual[:12])
     return read_examples(path)
 
 

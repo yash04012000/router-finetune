@@ -62,6 +62,14 @@
   .scroll { overflow-x: auto; }
   details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
   .hidden { display: none; }
+  pre { margin: 0; font: 12px/1.45 ui-monospace, Consolas, monospace; white-space: pre-wrap; word-break: break-word; }
+  .logbox { max-height: 360px; overflow: auto; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  .logbox .WARNING { color: var(--warn); } .logbox .ERROR, .logbox .CRITICAL { color: var(--bad); font-weight: 600; }
+  .logbox .DEBUG { color: var(--muted); }
+  .pill { font-size: 12px; padding: 1px 8px; border-radius: 99px; font-weight: 600; }
+  .pill.good { color: var(--good); border: 1px solid var(--good); } .pill.bad { color: var(--bad); border: 1px solid var(--bad); }
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; font-size: 13px; }
+  .kv dt { color: var(--muted); } .kv dd { margin: 0; word-break: break-all; }
 </style>
 </head>
 <body>
@@ -72,6 +80,7 @@
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="tab-play" aria-selected="true">Playground</button>
     <button class="tab" role="tab" id="tab-score" aria-selected="false">Scoreboard</button>
+    <button class="tab" role="tab" id="tab-debug" aria-selected="false">Debug</button>
   </div>
 
   <section id="view-play">
@@ -93,6 +102,29 @@
     <div id="error" class="err" role="alert"></div>
     <div id="banner"></div>
     <div class="results" id="results" aria-live="polite"></div>
+    <details id="raw" class="hidden panel" style="margin-top:12px">
+      <summary>Debug: raw request and response</summary>
+      <div class="small" id="rawmeta" style="margin:6px 0"></div>
+      <pre id="rawjson"></pre>
+    </details>
+  </section>
+
+  <section id="view-debug" class="hidden">
+    <p class="sub">What the server sees. Every request has an id: find it in the log below, in the terminal, or in logs/router.log.</p>
+    <div class="panel" id="health"></div>
+    <h2>Models</h2><div class="panel scroll"><table id="dmodels"></table></div>
+    <h2>Data splits</h2><div class="panel scroll"><table id="dsplits"></table></div>
+    <h2>Recent server errors</h2><div class="panel" id="derrors"></div>
+    <h2>Server log</h2>
+    <div class="row" style="margin:0 0 8px">
+      <button class="chip" id="refreshlog">Refresh</button>
+      <label class="small"><input type="checkbox" id="autolog"> auto-refresh every 2 s</label>
+      <span class="small" id="logpath"></span>
+    </div>
+    <div class="logbox"><pre id="logtext">loading…</pre></div>
+    <h2>This page's API calls</h2>
+    <p class="sub">The last 30 calls from this browser tab (also printed in the browser console, F12).</p>
+    <div class="panel scroll"><table id="calls"></table></div>
   </section>
 
   <section id="view-score" class="hidden">
@@ -118,26 +150,42 @@ function h(tag, props = {}, ...kids) {
     else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
     else if (k in el) el[k] = v; else el.setAttribute(k, v);
   }
-  for (const kid of kids.flat()) if (kid != null) el.append(kid.nodeType ? kid : document.createTextNode(kid));
+  for (const kid of kids.flat(Infinity)) if (kid != null) el.append(kid.nodeType ? kid : document.createTextNode(kid));
   return el;
 }
-const api = async (path, opts) => {
-  const r = await fetch(path, opts), data = await r.json();
-  if (!r.ok) throw new Error(data.error || r.statusText);
-  return data;
+// every call is timed, remembered for the Debug tab, and printed to the browser console
+const calls = [];
+const api = async (path, opts = {}) => {
+  const started = performance.now(), method = opts.method || "GET";
+  let status = "network error", rid = "-", data;
+  try {
+    const r = await fetch(path, opts);
+    status = r.status; rid = r.headers.get("X-Request-Id") || "-";
+    data = await r.json();
+    if (!r.ok) throw new Error(`${data.error || r.statusText} (request ${rid})`);
+    return data;
+  } finally {
+    const took = performance.now() - started;
+    calls.unshift({ time: new Date().toLocaleTimeString(), method, path, status, rid, took });
+    calls.length = Math.min(calls.length, 30);
+    console.debug(`[${rid}] ${method} ${path} -> ${status} in ${took.toFixed(0)} ms`, data);
+  }
 };
+window.addEventListener("error", (e) => console.error("page error:", e.message));
 const color = (name) => `var(--${name})`;
 
 // ---------- tabs ----------
 function show(tab) {
-  for (const t of ["play", "score"]) {
+  for (const t of ["play", "score", "debug"]) {
     $("view-" + t).classList.toggle("hidden", t !== tab);
     $("tab-" + t).setAttribute("aria-selected", t === tab);
   }
   if (tab === "score") loadScoreboard();
+  if (tab === "debug") loadDebug(); else stopAutoLog();
 }
 $("tab-play").onclick = () => show("play");
 $("tab-score").onclick = () => show("score");
+$("tab-debug").onclick = () => show("debug");
 
 // ---------- model picker ----------
 function renderModels() {
@@ -184,10 +232,14 @@ async function run() {
   if (!text) { $("error").textContent = "Type a message first."; return; }
   if (!chosen.length) { $("error").textContent = "Pick at least one model."; return; }
   $("run").disabled = true;
+  const t0 = performance.now();
   try {
     const out = await api("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text, models: chosen }) });
     $("results").replaceChildren(...out.results.map(resultCard));
+    $("raw").classList.remove("hidden");
+    $("rawmeta").textContent = `request ${out.request_id} · server ${out.server_ms} ms · round trip ${(performance.now() - t0).toFixed(0)} ms`;
+    $("rawjson").textContent = "POST /api/predict\n" + JSON.stringify({ text, models: chosen }, null, 2) + "\n\nresponse:\n" + JSON.stringify(out, null, 2);
     const notes = [];
     if (out.results.length > 1) {
       const answers = new Set(out.results.map((r) => r.intent));
@@ -226,6 +278,50 @@ async function loadScoreboard() {
   $("score").replaceChildren(h("thead", {}, head), h("tbody", {}, body));
   $("intents").replaceChildren(...Object.entries(intents).map(([n, d]) => h("tr", {}, h("td", {}, h("b", {}, n)), h("td", { class: "small" }, d))));
 }
+
+// ---------- debug tab ----------
+let logTimer = null;
+const stopAutoLog = () => { clearInterval(logTimer); logTimer = null; $("autolog").checked = false; };
+const kv = (obj) => h("dl", { class: "kv" }, Object.entries(obj).map(([k, v]) => [h("dt", {}, k), h("dd", {}, String(v))]));
+const pill = (ok, yes, no) => h("span", { class: "pill " + (ok ? "good" : "bad") }, ok ? yes : no);
+
+async function loadLog() {
+  try {
+    const out = await api("/api/logs?n=250");
+    $("logpath").textContent = out.path;
+    const box = document.querySelector(".logbox"), atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+    $("logtext").replaceChildren(...out.lines.map((line) => {
+      const level = (line.match(/ (DEBUG|INFO|WARNING|ERROR|CRITICAL) /) || [])[1] || "";
+      return h("div", { class: level }, line);
+    }));
+    if (!out.lines.length) $("logtext").textContent = "(log is empty)";
+    if (atBottom) box.scrollTop = box.scrollHeight;
+  } catch (e) { $("logtext").textContent = "Could not read the log: " + e.message; }
+}
+async function loadDebug() {
+  try {
+    const d = await api("/api/debug");
+    $("health").replaceChildren(kv({ "server time": d.time, uptime: d.uptime_seconds + " s", "requests served": d.requests_served, ...d.versions }));
+    $("dmodels").replaceChildren(
+      h("thead", {}, h("tr", {}, ["Model", "Status", "Loaded in memory", "File", "Why not"].map((t) => h("th", {}, t)))),
+      h("tbody", {}, d.models.map((m) => h("tr", {}, h("td", {}, m.name), h("td", {}, pill(m.available, "available", "unavailable")),
+        h("td", {}, m.loaded ? "yes" : "no (loads on first use)"),
+        h("td", { class: "small" }, m.model_file ? `${m.model_file} ${m.file_exists ? "" : "(missing)"}` : "—"), h("td", { class: "small" }, m.reason || "")))));
+    $("dsplits").replaceChildren(
+      h("thead", {}, h("tr", {}, ["Split", "File", "Matches frozen hash", "sha256"].map((t) => h("th", {}, t)))),
+      h("tbody", {}, Object.entries(d.splits).map(([n, s]) => h("tr", {}, h("td", {}, n), h("td", {}, s.exists ? "found" : "MISSING"),
+        h("td", {}, pill(s.hash_ok, "ok", "CHANGED")), h("td", { class: "small" }, s.sha256)))));
+    $("derrors").replaceChildren(...(d.recent_errors.length ? d.recent_errors.map((e) => h("div", { class: "no" }, `[${e.request_id}] ${e.when} ${e.request}: ${e.error}`))
+      : [h("span", { class: "ok" }, "none since the server started")]));
+  } catch (e) { $("health").textContent = "Could not load debug info: " + e.message; }
+  $("calls").replaceChildren(
+    h("thead", {}, h("tr", {}, ["Time", "Request id", "Call", "Status", "Took"].map((t) => h("th", {}, t)))),
+    h("tbody", {}, calls.map((c) => h("tr", {}, h("td", {}, c.time), h("td", {}, c.rid), h("td", {}, `${c.method} ${c.path}`),
+      h("td", { class: typeof c.status === "number" && c.status < 400 ? "" : "no" }, c.status), h("td", { class: "num" }, c.took.toFixed(0) + " ms")))));
+  loadLog();
+}
+$("refreshlog").onclick = loadLog;
+$("autolog").onchange = (e) => { clearInterval(logTimer); logTimer = e.target.checked ? setInterval(loadLog, 2000) : null; };
 
 // ---------- start ----------
 (async () => {

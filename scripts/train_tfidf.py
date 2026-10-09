@@ -1,20 +1,32 @@
 """Train the TF-IDF + logistic regression baseline and save it.
 
-python -m scripts.train_tfidf
+python -m scripts.train_tfidf [--verbose]
+
+Progress goes to the console and to logs/router.log.
 """
 
+import argparse
+import logging
 import platform
 import time
 
 import sklearn
 
+from router import log
 from router.baselines import tfidf
 from router.intents import REPO_ROOT, intent_names
 from router.results import save_training_record
 from router.splits import load_split
 
+logger = logging.getLogger("router.train_tfidf")
+
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--verbose", action="store_true", help="show DEBUG lines on the console too")
+    log.setup_logging(verbose=parser.parse_args().verbose)
+    logger.info("starting TF-IDF training (scikit-learn %s)", sklearn.__version__)
+
     labels = intent_names()
     train_examples, val_examples = load_split("train"), load_split("val")
 
@@ -23,10 +35,11 @@ def main() -> None:
     wall_seconds = time.perf_counter() - start
 
     best = max(grid, key=lambda g: g["val_macro_f1"])
-    for g in grid:
-        print(f"C={g['C']:<4} val macro F1 = {g['val_macro_f1']:.4f}" + ("   <- best" if g is best else ""))
+    logger.info("training took %.1f s", wall_seconds)
 
-    tfidf.save(model, REPO_ROOT / "models" / "tfidf_lr.joblib")
+    model_path = REPO_ROOT / "models" / "tfidf_lr.joblib"
+    tfidf.save(model, model_path)
+    logger.info("saved model to %s (%.1f MB)", model_path, model_path.stat().st_size / 1e6)
     save_training_record(
         tfidf.APPROACH,
         {

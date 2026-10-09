@@ -6,6 +6,7 @@ then learns one weight per (piece, intent). No neural network, trains in seconds
 See docs/math/tfidf-logreg.md for the maths.
 """
 
+import logging
 import time
 from pathlib import Path
 
@@ -18,6 +19,8 @@ from sklearn.pipeline import FeatureUnion, Pipeline
 from router.format import render
 from router.metrics import macro_f1
 from router.schema import Example, Prediction
+
+logger = logging.getLogger("router.tfidf")
 
 APPROACH = "tfidf_lr"
 # inverse regularisation strength: bigger C = trust the training data more
@@ -48,13 +51,26 @@ def train(train_examples: list[Example], val_examples: list[Example], labels: li
     X_val = [render(e) for e in val_examples]
     y_val = [e.intent for e in val_examples]
 
+    logger.info("training on %d examples, validating on %d, C grid %s", len(X_train), len(X_val), C_GRID)
     best, best_score, grid = None, -1.0, []
     for C in C_GRID:
+        start = time.perf_counter()
         model = build_pipeline(C).fit(X_train, y_train)
         score = macro_f1(y_val, list(model.predict(X_val)), labels)
+        n_features = len(model.named_steps["clf"].coef_[0])
+        logger.info(
+            "C=%-4s val macro F1 %.4f  (%d features, %.1f s)",
+            C,
+            score,
+            n_features,
+            time.perf_counter() - start,
+        )
         grid.append({"C": C, "val_macro_f1": score})
         if score > best_score:
             best, best_score = model, score
+    logger.info(
+        "best C=%s with val macro F1 %.4f", max(grid, key=lambda g: g["val_macro_f1"])["C"], best_score
+    )
     return best, grid
 
 
@@ -69,6 +85,7 @@ def load(path: Path) -> Pipeline:
 
 def predict(model: Pipeline, examples: list[Example]) -> list[Prediction]:
     """One example at a time, timing each (the router decides one message at a time)."""
+    logger.info("predicting %d examples one at a time", len(examples))
     preds = []
     for e in examples:
         text = render(e)

@@ -96,3 +96,61 @@ def test_api_rejects_bad_input(base_url, payload):
 def test_page_is_served(base_url):
     with urllib.request.urlopen(base_url + "/") as r:
         assert b"Router playground" in r.read()
+
+
+# ---------- debugging support ----------
+def raw_get(url):
+    """Like get(), but also returns the status code and headers (and doesn't raise on 4xx/5xx)."""
+    try:
+        with urllib.request.urlopen(url) as r:
+            return r.status, r.headers, json.load(r)
+    except urllib.error.HTTPError as err:
+        return err.code, err.headers, json.load(err)
+
+
+def test_every_response_carries_a_request_id(base_url):
+    status, headers, _ = raw_get(base_url + "/api/models")
+    assert status == 200 and len(headers["X-Request-Id"]) == 5
+    status, headers, body = raw_get(base_url + "/api/nope")
+    assert status == 404 and body["request_id"] == headers["X-Request-Id"]
+
+
+def test_bad_json_is_a_400_with_a_clear_message(base_url):
+    req = urllib.request.Request(
+        base_url + "/api/predict", b"{not json", {"Content-Type": "application/json"}
+    )
+    with pytest.raises(urllib.error.HTTPError) as err:
+        urllib.request.urlopen(req)
+    assert err.value.code == 400
+    assert "not valid JSON" in json.load(err.value)["error"]
+
+
+def test_debug_endpoint_reports_models_and_split_hashes(base_url):
+    d = get(base_url + "/api/debug")
+    assert d["versions"]["python"] and d["requests_served"] >= 1
+    assert {s for s in d["splits"]} == {"train", "val", "test"}
+    assert all(s["hash_ok"] for s in d["splits"].values())
+    planned = next(m for m in d["models"] if m["name"] == "distilbert")
+    assert planned["available"] is False and "not built yet" in planned["reason"]
+
+
+def test_a_crash_becomes_a_500_and_is_remembered(base_url, monkeypatch):
+    def boom():
+        raise RuntimeError("kaboom")
+
+    monkeypatch.setattr(serve.registry, "list_models", boom)
+    status, _, body = raw_get(base_url + "/api/models")
+    assert status == 500 and "RuntimeError" in body["error"] and body["request_id"] in body["error"]
+    monkeypatch.undo()
+    errors = get(base_url + "/api/debug")["recent_errors"]
+    assert any("kaboom" in e["error"] for e in errors)
+
+
+def test_logs_endpoint_returns_lines(base_url):
+    out = get(base_url + "/api/logs?n=5")
+    assert isinstance(out["lines"], list) and len(out["lines"]) <= 5
+
+
+def test_logs_endpoint_rejects_a_non_number(base_url):
+    status, _, body = raw_get(base_url + "/api/logs?n=abc")
+    assert status == 400 and "whole number" in body["error"]
