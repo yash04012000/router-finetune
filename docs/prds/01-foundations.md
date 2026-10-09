@@ -30,7 +30,7 @@ predictions file"; everything downstream is shared.
 ### 1. Intent taxonomy — `config/intents.yaml`
 
 16 intents for a generic e-commerce/subscription support desk, each with a one-line description
-(used verbatim in the large-model prompt in PRD 4 and in the generation prompt in PRD 2):
+(used verbatim in the large-model prompt in PRD 5 and in the generation prompt in PRD 2):
 
 | Intent | Designed to be confused with |
 |---|---|

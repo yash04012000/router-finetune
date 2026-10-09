@@ -1,6 +1,6 @@
-# PRD 4 — Large model, prompted zero-shot
+# PRD 5 — Large model, prompted zero-shot
 
-Status: Not started · Depends on: PRDs 1-2 · Blocks: PRDs 6-7
+Status: Not started · Depends on: PRDs 1-2 (build after PRD 4) · Blocks: PRDs 6-7
 
 ## Summary
 

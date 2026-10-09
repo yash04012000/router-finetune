@@ -81,7 +81,7 @@ Consequences, and what we do:
 
 - **Accuracy can flatter a model** that does well on the big classes. We therefore always report
   **macro F1** as well (see [metrics.md](metrics.md)), which weighs every intent equally.
-- For fine-tuning we may use a class-weighted loss or just report per-class scores; PRD 3 and 5 decide.
+- For fine-tuning we may use a class-weighted loss or just report per-class scores; PRD 3 and 4 decide.
 - We don't rebalance the test set. It reflects the dataset's natural distribution; per-class results
   show the small intents separately.
 

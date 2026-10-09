@@ -25,7 +25,7 @@ file → compute metrics — before any money or GPU time is spent.
 
 ## Design
 
-### Input formatting (shared with PRD 5)
+### Input formatting (shared with PRD 4)
 
 `src/router/format.py::render(example) -> str` flattens turns into one string:
 `"[agent] ... [user] ... [user] <routed message>"`, truncated from the left to the tokenizer's
@@ -42,9 +42,9 @@ budget so the routed message is never cut. All non-LLM approaches use this one f
 
 - HF `Trainer`, max_len 128, lr 5e-5, batch 32, up to 5 epochs, warmup 10%, weight decay 0.01,
   early stopping (patience 1) on val macro F1, seed 42, fp16 on the RTX 4060 Ti.
-- Confidence: softmax max, then temperature scaling fit on val (same `calibrate.py` that PRD 5
+- Confidence: softmax max, then temperature scaling fit on val (same `calibrate.py` that PRD 4
   uses — built here first).
-- Weights not committed (gitignored); pushed to the HF Hub alongside the LoRA adapter in PRD 5.
+- Weights not committed (gitignored); pushed to the HF Hub alongside the LoRA adapter in PRD 4.
 
 ### Shared runner
 

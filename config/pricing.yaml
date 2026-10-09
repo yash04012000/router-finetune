@@ -1,6 +1,6 @@
 # Prices used for the cost-per-1,000-decisions numbers.
 # Prices change. Every entry records where it came from and when it was read.
-# The numbers below are PLACEHOLDERS - fill in real values (and the model id) in PRD 4,
+# The numbers below are PLACEHOLDERS - fill in real values (and the model id) in PRD 5,
 # when we pick the large model, and check them against the provider's pricing page.
 
 api:

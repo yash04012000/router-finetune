@@ -1,6 +1,6 @@
 # The 16 intents the router chooses between (15 banking intents + out_of_scope).
 #
-# description      -> one line shown to the large model in the prompt (PRD 4)
+# description      -> one line shown to the large model in the prompt (PRD 5)
 # confusable_with  -> our GUESS of which intents models will mix up. PRD 6 checks the guess
 #                     against the real confusion matrix.
 #

@@ -1,4 +1,4 @@
-# PRD 5 — Small open model, LoRA / QLoRA fine-tune
+# PRD 4 — Small open model, LoRA / QLoRA fine-tune
 
 Status: Not started · Depends on: PRDs 1-3 · Blocks: PRDs 6-7
 
