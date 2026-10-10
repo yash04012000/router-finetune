@@ -70,6 +70,32 @@ Plain-words definitions. "First seen" tells you where to find the full explanati
 | **`max_len`** | The longest input we allow. We chose 64 (cuts 0.29% of training messages) |
 | **Uncased** | The model lowercases everything (`distilbert-base-uncased`) |
 
+## The model (step 3.3)
+
+| Term | Meaning |
+|---|---|
+| **Pretrained model** | A model already trained by others on huge text. We start from it instead of from nothing |
+| **Fine-tuning** | Continuing to train a pretrained model on our small task so it specialises |
+| **Body / backbone** | The pretrained part (DistilBERT: embeddings + 6 transformer layers, 66.4M parameters) |
+| **Head** | The small new part on top that outputs one score per intent (602,896 parameters, random at the start) |
+| **Parameter** | One learnable number (a weight or a bias). Training changes them |
+| **Weight / bias** | A `Linear(in -> out)` layer has `in x out` weights and `out` biases |
+| **Embedding** | A table that gives each token id a vector of 768 numbers |
+| **Transformer layer** | A block that lets every token look at the others (attention) and then transforms them. DistilBERT has 6 |
+| **Hidden state** | The 768-number vector for each token after a layer |
+| **Attention** | The mechanism by which each token takes information from the other tokens in the message |
+| **`[CLS]` vector** | The hidden state at position 0 after the last layer; used as the summary of the message |
+| **Logits** | The head's raw scores, one per intent. Any real number; not probabilities |
+| **ReLU** | Keeps positive numbers, turns negative numbers into 0 |
+| **Softmax** | `e^score / sum of e^scores`: turns logits into probabilities that add to 1 |
+| **Dropout** | In training mode, randomly zeroes some numbers to fight memorising. Off in eval mode |
+| **`model.train()` / `model.eval()`** | Switch dropout on / off. Use `eval()` whenever you measure or predict |
+| **`torch.no_grad()`** | Do not record operations for gradients (saves memory when only measuring) |
+| **`id2label` / `label2id`** | The mapping between a class index and its intent name; here, `intents.yaml` order |
+| **Seed** | The starting point of random number generation; the same seed gives the same "random" numbers |
+| **Chance level** | The accuracy of random guessing: 1/16 = 6.25% for 16 classes |
+| **`ln(16)` = 2.773** | The cross-entropy loss of a model that gives all 16 classes equal probability; where training starts |
+
 ## Coming in later steps
 
-Logits, classification head, parameters, gradient, optimizer (AdamW), learning rate, batch, epoch, overfitting, mixed precision, calibration, LoRA.
+Gradient, backward pass, optimizer (AdamW), learning rate, batch, epoch, overfitting, mixed precision, calibration, LoRA.

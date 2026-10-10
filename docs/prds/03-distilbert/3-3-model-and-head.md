@@ -1,6 +1,6 @@
 # 3.3 — The pretrained model and a fresh classification head
 
-Status: Not started · Depends on: 3.2 · Next: [3.4](3-4-one-training-step.md)
+Status: Done · Depends on: 3.2 · Next: [3.4](3-4-one-training-step.md)
 
 ## The one idea
 
@@ -19,10 +19,10 @@ before any training the model is no better than guessing.
   DistilBERT is a distilled, smaller copy).
 - Hidden states: one 768-number vector per token. We take the vector at the `[CLS]` position as the
   message's summary.
-- The head: a small linear layer `768 -> 16` that turns the summary into 16 scores (**logits**), one per
+- The head: two layers, `Linear(768 -> 768)`, ReLU, dropout, then `Linear(768 -> 16)`, that turn the summary into 16 scores (**logits**), one per
   intent. Softmax turns logits into probabilities (same softmax as in the TF-IDF maths page).
 - Why a brand-new head starts with random weights, so predictions are random.
-- Parameter counting: how many are in the body vs the head (the head is about 0.02% of the model).
+- Parameter counting: how many are in the body vs the head (the head is about 0.90% of the model).
 
 ## What we build
 
@@ -46,6 +46,13 @@ docs/math/fine-tuning.md     part 1: logits, softmax, what the head computes (fo
 
 - You can draw the pipeline `text -> ids -> body -> [CLS] vector -> head -> 16 logits -> probabilities`.
 - Untrained accuracy is near chance and we know why.
+
+## Result
+
+- 66,965,776 parameters: body 66,362,880 (99.1%) + head 602,896 (**0.90%**; the first plan said "about 0.02%", which was wrong because the head has two layers).
+- Shapes for 8 messages x 36 tokens: ids (8, 36), hidden (8, 36, 768), `[CLS]` (8, 768), logits (8, 16). The head rebuilt by hand matches the model exactly.
+- Untrained, on 500 validation messages: accuracy **7.6%** (chance 6.25%), loss **2.782** (`ln 16` = 2.773), only 4 of 16 classes ever predicted.
+- 11 tests in `tests/test_model_head.py`. Notes: [docs/learning/step-3-3-model-and-head.md](../../learning/step-3-3-model-and-head.md).
 
 ## Check your understanding
 

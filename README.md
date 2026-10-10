@@ -1,6 +1,8 @@
 # router-finetune
 
 > Not built yet. The spec is in [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md).
+>
+> **New here?** Start with the [reading roadmap](docs/learning/reading-roadmap.md).
 
 Replace this file as soon as there is a first result. Required order:
 
