@@ -29,5 +29,5 @@ goes on that step's page. Nothing important should live only in a chat.
 | TF-IDF baseline (PRD 3A) | [tfidf-baseline.md](tfidf-baseline.md) |
 | 3.1 GPU environment | [step-3-1-environment.md](step-3-1-environment.md) |
 | 3.2 Tokenization | [step-3-2-tokenizer.md](step-3-2-tokenizer.md) |
-| 3.3 Model and head | [step-3-3-model-and-head.md](step-3-3-model-and-head.md) |
+| 3.3 Model and head (+ the Lab tab) | [step-3-3-model-and-head.md](step-3-3-model-and-head.md) |
 | How to read this repo | [reading-roadmap.md](reading-roadmap.md) |

@@ -70,6 +70,36 @@
   .pill.good { color: var(--good); border: 1px solid var(--good); } .pill.bad { color: var(--bad); border: 1px solid var(--bad); }
   .kv { display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; font-size: 13px; }
   .kv dt { color: var(--muted); } .kv dd { margin: 0; word-break: break-all; }
+  /* Lab tab */
+  .toks { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
+  .tok { text-align: center; border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; background: var(--bg); min-width: 44px; }
+  .tok b { display: block; font: 600 14px ui-monospace, Consolas, monospace; }
+  .tok i { display: block; font: normal 11px ui-monospace, Consolas, monospace; color: var(--muted); }
+  .tok.special { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--card)); }
+  .tok.cont { border-left: 3px dotted var(--warn); }
+  .tok.cut { opacity: .35; text-decoration: line-through; }
+  .gauge { height: 10px; background: var(--line); border-radius: 5px; overflow: hidden; max-width: 360px; }
+  .gauge i { display: block; height: 100%; background: var(--good); }
+  .gauge.over i { background: var(--bad); }
+  .pipe { display: flex; flex-wrap: wrap; align-items: stretch; gap: 6px; }
+  .stage { flex: 1 1 130px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--bg); font-size: 13px; }
+  .stage h4 { margin: 0 0 2px; font-size: 13px; }
+  .stage code { color: var(--accent); font-size: 12px; }
+  .stage.new { border-color: var(--warn); }
+  .arrow { align-self: center; color: var(--muted); }
+  .cls-grid { display: grid; grid-template-columns: repeat(32, 1fr); gap: 2px; max-width: 560px; margin: 6px 0; }
+  .cell { aspect-ratio: 1; border-radius: 2px; background: var(--accent); }
+  .cell.neg { background: var(--warn); }
+  .twocol { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 12px; }
+  .hbar { display: grid; grid-template-columns: 150px 1fr 56px; gap: 6px; align-items: center; font-size: 12px; margin: 2px 0; }
+  .hbar .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .track { position: relative; height: 10px; background: var(--line); border-radius: 3px; }
+  .track i { position: absolute; top: 0; height: 100%; background: var(--accent); border-radius: 3px; }
+  .track i.neg { background: var(--warn); }
+  .track u { position: absolute; top: -2px; bottom: -2px; width: 0; border-left: 2px dashed var(--text); opacity: .55; }
+  .stack { display: flex; height: 18px; border-radius: 5px; overflow: hidden; background: var(--line); margin: 6px 0; }
+  .stack i { display: block; height: 100%; }
+  .note { border-left: 3px solid var(--warn); padding: 4px 10px; margin: 8px 0; color: var(--muted); font-size: 13px; }
 </style>
 </head>
 <body>
@@ -80,6 +110,7 @@
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="tab-play" aria-selected="true">Playground</button>
     <button class="tab" role="tab" id="tab-score" aria-selected="false">Scoreboard</button>
+    <button class="tab" role="tab" id="tab-lab" aria-selected="false">Lab</button>
     <button class="tab" role="tab" id="tab-debug" aria-selected="false">Debug</button>
   </div>
 
@@ -107,6 +138,33 @@
       <div class="small" id="rawmeta" style="margin:6px 0"></div>
       <pre id="rawjson"></pre>
     </details>
+  </section>
+
+  <section id="view-lab" class="hidden">
+    <p class="sub">Look inside the fine-tuning pipeline. Each step of the DistilBERT plan adds a view here, so you can try the idea on your own message.</p>
+    <div class="panel">
+      <label class="small" for="labtext">Message</label>
+      <textarea id="labtext" maxlength="1000" style="min-height:60px">My card was declined at the shop but I have money in my account</textarea>
+      <div class="row"><button class="primary" id="labrun">Look inside</button><span class="small">Ctrl + Enter</span><span class="small" id="labstatus"></span></div>
+    </div>
+    <div id="laberror" class="err" role="alert"></div>
+
+    <h2>Step 3.2 · Tokenizer: what the model receives</h2>
+    <p class="sub">The model cannot read words. The tokenizer cuts the message into pieces from a 30,522-piece vocabulary and gives each an id.
+      <b>[CLS]</b> and <b>[SEP]</b> are added automatically; a dotted edge marks a piece that continues the previous one (<code>##</code>).</p>
+    <div class="panel" id="lab-tokens"></div>
+
+    <h2>Step 3.3 · The untrained model: from tokens to 16 scores</h2>
+    <p class="sub">The pretrained <b>body</b> turns every token into 768 numbers. The new, random <b>head</b> reads the <b>[CLS]</b> vector and gives one score per intent.</p>
+    <div class="panel" id="lab-pipeline"></div>
+    <div class="note" id="lab-untrained"></div>
+    <div class="twocol">
+      <div class="panel"><b>Logits</b> <span class="small">(raw scores; any number)</span><div id="lab-logits"></div></div>
+      <div class="panel"><b>Probabilities</b> <span class="small">(softmax; dashed line = 1/16 = guessing)</span><div id="lab-probs"></div></div>
+    </div>
+    <h2>Where the parameters are</h2>
+    <p class="sub">Every learnable number in the model. Fine-tuning changes some or all of them.</p>
+    <div class="panel" id="lab-params"></div>
   </section>
 
   <section id="view-debug" class="hidden">
@@ -176,15 +234,17 @@ const color = (name) => `var(--${name})`;
 
 // ---------- tabs ----------
 function show(tab) {
-  for (const t of ["play", "score", "debug"]) {
+  for (const t of ["play", "score", "lab", "debug"]) {
     $("view-" + t).classList.toggle("hidden", t !== tab);
     $("tab-" + t).setAttribute("aria-selected", t === tab);
   }
   if (tab === "score") loadScoreboard();
+  if (tab === "lab" && !labLoaded) labRun();
   if (tab === "debug") loadDebug(); else stopAutoLog();
 }
 $("tab-play").onclick = () => show("play");
 $("tab-score").onclick = () => show("score");
+$("tab-lab").onclick = () => show("lab");
 $("tab-debug").onclick = () => show("debug");
 
 // ---------- model picker ----------
@@ -278,6 +338,92 @@ async function loadScoreboard() {
   $("score").replaceChildren(h("thead", {}, head), h("tbody", {}, body));
   $("intents").replaceChildren(...Object.entries(intents).map(([n, d]) => h("tr", {}, h("td", {}, h("b", {}, n)), h("td", { class: "small" }, d))));
 }
+
+// ---------- lab tab ----------
+let labLoaded = false;
+const shape = (s) => "[" + s.join(" × ") + "]";
+const fmt = (n) => n.toLocaleString("en-US");
+
+function renderTokens(t) {
+  const fits = t.truncated_tokens === 0, share = Math.min(1, t.n_tokens / t.max_len);
+  const chips = t.pieces.map((p, i) => h("div", { class: "tok" + (p.special ? " special" : "") + (p.continues ? " cont" : "") + (i >= t.max_len ? " cut" : ""), title: `id ${p.id}` },
+    h("b", {}, p.token), h("i", {}, p.id)));
+  $("lab-tokens").replaceChildren(
+    h("div", { class: "toks" }, chips),
+    h("div", { class: "small" }, `${t.n_words} words → ${t.n_tokens} tokens (including [CLS] and [SEP]). Attention mask: ${t.n_tokens} ones, no padding (one message, no batch).`),
+    h("div", { class: "gauge" + (fits ? "" : " over"), style: "margin:6px 0 2px" }, h("i", { style: `width:${share * 100}%` })),
+    h("div", { class: "small" }, fits ? `${t.n_tokens} of max_len ${t.max_len}: fits, nothing is cut.` : `max_len is ${t.max_len}: the last ${t.truncated_tokens} tokens (struck through) would be cut off.`));
+}
+
+function hbars(rows, { signed, scale, ref }) {
+  return rows.map((r) => {
+    const frac = Math.min(1, Math.abs(r.value) / scale);
+    const style = signed ? `left:${r.value >= 0 ? 50 : 50 - frac * 50}%;width:${frac * 50}%` : `left:0;width:${frac * 100}%`;
+    return h("div", { class: "hbar" }, h("span", { class: "lbl", title: r.label }, r.label),
+      h("div", { class: "track" }, h("i", { class: r.value < 0 ? "neg" : "", style }),
+        signed ? h("u", { style: "left:50%" }) : (ref != null ? h("u", { style: `left:${ref * 100}%` }) : null)),
+      h("span", { class: "num" }, r.text));
+  });
+}
+
+function renderModel(m) {
+  const s = m.shapes;
+  $("lab-pipeline").replaceChildren(
+    h("div", { class: "pipe" },
+      h("div", { class: "stage" }, h("h4", {}, "1 · Tokens"), h("code", {}, "input_ids " + shape(s.input_ids)), h("div", { class: "small" }, "1 message, L tokens")),
+      h("span", { class: "arrow" }, "→"),
+      h("div", { class: "stage" }, h("h4", {}, "2 · Body (pretrained)"), h("code", {}, "hidden " + shape(s.hidden_states)), h("div", { class: "small" }, "768 numbers per token")),
+      h("span", { class: "arrow" }, "→"),
+      h("div", { class: "stage" }, h("h4", {}, "3 · [CLS] vector"), h("code", {}, shape(s.cls_vector)), h("div", { class: "small" }, "position 0 = summary")),
+      h("span", { class: "arrow" }, "→"),
+      h("div", { class: "stage new" }, h("h4", {}, "4 · Head (NEW, random)"), h("code", {}, "logits " + shape(s.logits)), h("div", { class: "small" }, "one score per intent")),
+      h("span", { class: "arrow" }, "→"),
+      h("div", { class: "stage" }, h("h4", {}, "5 · Softmax"), h("code", {}, "sum = " + m.prob_sum.toFixed(4)), h("div", { class: "small" }, "probabilities")),
+    ),
+    h("div", { class: "small", style: "margin-top:10px" }, `First ${m.cls_preview.length} of the 768 numbers in the [CLS] vector (blue = positive, orange = negative, stronger = bigger):`),
+    h("div", { class: "cls-grid" }, (() => { const mx = Math.max(...m.cls_preview.map(Math.abs)) || 1;
+      return m.cls_preview.map((v) => h("div", { class: "cell" + (v < 0 ? " neg" : ""), title: String(v), style: `opacity:${(0.12 + 0.88 * Math.abs(v) / mx).toFixed(2)}` })); })()),
+    h("div", { class: "small" }, `Head rebuilt by hand (pre_classifier → ReLU → classifier) equals the model's logits: `,
+      h("span", { class: m.head_matches_by_hand ? "ok" : "no" }, m.head_matches_by_hand ? "yes, exactly" : "NO (a bug!)"), ` · ran on ${m.device} in ${m.latency_ms} ms`));
+
+  const top = m.top[0];
+  $("lab-untrained").textContent = `Not trained yet. The highest probability is ${(top.prob * 100).toFixed(1)}% (${top.intent}), barely above the 6.25% of pure guessing, so this "answer" means nothing. Step 3.4 starts training.`;
+
+  const scale = Math.max(0.3, ...m.classes.map((c) => Math.abs(c.logit)));
+  $("lab-logits").replaceChildren(...hbars(m.classes.map((c) => ({ label: c.intent, value: c.logit, text: c.logit.toFixed(3) })), { signed: true, scale }),
+    h("div", { class: "small" }, `scale: ±${scale.toFixed(2)} (centre line = 0)`));
+  $("lab-probs").replaceChildren(...hbars(m.classes.map((c) => ({ label: c.intent, value: c.prob, text: (c.prob * 100).toFixed(1) + "%" })), { signed: false, scale: 1, ref: m.uniform_prob }),
+    h("div", { class: "small" }, "scale: 0 to 100%. A trained model will have one long bar and the rest near 0."));
+}
+
+function renderParams(p) {
+  const colors = { "Embeddings": "var(--tfidf_lr)", "6 transformer layers": "var(--lora_qwen)", "pre_classifier": "var(--distilbert)", "classifier": "var(--hybrid)" };
+  $("lab-params").replaceChildren(
+    h("div", {}, h("b", {}, fmt(p.total)), " parameters · body ", h("b", {}, fmt(p.body)), ` (${(100 * p.body / p.total).toFixed(1)}%) · new head `, h("b", {}, fmt(p.head)), ` (${(100 * p.head / p.total).toFixed(2)}%) · weights alone take ${p.weights_mb} MB in float32`),
+    h("div", { class: "stack" }, p.parts.map((x) => h("i", { style: `width:${Math.max(0.4, 100 * x.params / p.total)}%;background:${colors[x.name]}`, title: x.name }))),
+    h("table", {}, h("thead", {}, h("tr", {}, ["", "Part", "How", "Parameters", "Share"].map((t) => h("th", { class: t === "Parameters" || t === "Share" ? "num" : "" }, t)))),
+      h("tbody", {}, p.parts.map((x) => h("tr", {}, h("td", {}, h("span", { class: "dot", style: `background:${colors[x.name]}` })), h("td", {}, x.name, " ", h("span", { class: "tag" }, x.group === "head" ? "new" : "pretrained")),
+        h("td", { class: "small" }, x.detail), h("td", { class: "num" }, fmt(x.params)), h("td", { class: "num" }, (100 * x.params / p.total).toFixed(2) + "%"))))));
+}
+
+async function labRun() {
+  const text = $("labtext").value.trim();
+  $("laberror").textContent = "";
+  if (!text) { $("laberror").textContent = "Type a message first."; return; }
+  $("labrun").disabled = true;
+  $("labstatus").textContent = labLoaded ? "working…" : "loading the model (the first time takes a few seconds)…";
+  const post = (path) => api(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
+  try {
+    const [tok, model, info] = await Promise.all([post("/api/lab/tokenize"), post("/api/lab/model"), api("/api/lab/info")]);
+    renderTokens(tok); renderModel(model); renderParams(info);
+    labLoaded = true; $("labstatus").textContent = "";
+  } catch (e) {
+    $("laberror").textContent = "Lab unavailable: " + e.message; $("labstatus").textContent = "";
+  }
+  $("labrun").disabled = false;
+}
+$("labrun").onclick = labRun;
+$("labtext").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) labRun(); });
 
 // ---------- debug tab ----------
 let logTimer = null;

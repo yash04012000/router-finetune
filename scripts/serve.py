@@ -12,6 +12,9 @@ API (all JSON, local only):
     GET  /api/scoreboard          accuracy / macro F1 / latency of every approach on the test split
     GET  /api/debug               versions, model files, split hashes, recent errors
     GET  /api/logs?n=200          the last n lines of logs/router.log
+    POST /api/lab/tokenize        {"text": "..."}  -> tokens, ids (step 3.2)
+    POST /api/lab/model           {"text": "..."}  -> one message through the untrained DistilBERT (step 3.3)
+    GET  /api/lab/info            where the model's parameters are (step 3.3)
 
 Debugging: every request gets an id like [00007]. It is in the console, in logs/router.log, in the
 `X-Request-Id` response header and in the Debug tab of the page, so you can follow one request
@@ -34,7 +37,7 @@ from urllib.parse import parse_qs, urlparse
 import numpy as np
 import sklearn
 
-from router import log
+from router import lab, log
 from router.intents import REPO_ROOT, load_intents
 from router.scoreboard import score_all
 from router.serving import Registry
@@ -74,12 +77,18 @@ def api_examples(n: int) -> list[dict]:
     return [{"text": e.text, "intent": e.intent} for e in chosen]
 
 
-def api_predict(body: dict, request_id: str) -> dict:
+def clean_text(body: dict) -> str:
+    """The message from a request body, or a ClientError saying what is wrong with it."""
     text = str(body.get("text", "")).strip()
     if not text:
         raise ClientError("Type a message first.")
     if len(text) > MAX_TEXT_CHARS:
         raise ClientError(f"Message is too long (max {MAX_TEXT_CHARS} characters).")
+    return text
+
+
+def api_predict(body: dict, request_id: str) -> dict:
+    text = clean_text(body)
     names = body.get("models", [])
     logger.debug("[%s] predict text=%r models=%s", request_id, text, names)
     results, errors = [], {}
@@ -141,6 +150,9 @@ class Handler(BaseHTTPRequestHandler):
         except ClientError as err:
             logger.warning("[%s] %s %s -> %d %s", self.request_id, method, self.path, err.status, err)
             self.send_json({"error": str(err)}, err.status)
+        except lab.LabUnavailable as err:  # PyTorch/model missing: not a bug, just not available here
+            logger.warning("[%s] %s %s -> 503 %s", self.request_id, method, self.path, err)
+            self.send_json({"error": str(err)}, 503)
         except (BrokenPipeError, ConnectionResetError):
             logger.warning("[%s] browser closed the connection before the reply was sent", self.request_id)
         except Exception as err:
@@ -199,23 +211,34 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json(score_all("test"))
         elif url.path == "/api/debug":
             self.send_json(api_debug())
+        elif url.path == "/api/lab/info":
+            self.send_json(lab.model_info())
         elif url.path == "/api/logs":
             self.send_json({"path": str(log.LOG_FILE), "lines": log.tail(self.int_param(query, "n", 200))})
         else:
             raise ClientError(f"No such page: {url.path}", 404)
 
-    def route_post(self) -> None:
-        if urlparse(self.path).path != "/api/predict":
-            raise ClientError(f"No such endpoint: {self.path}", 404)
+    def read_json_body(self) -> dict:
         length = int(self.headers.get("Content-Length", 0))
         if length > MAX_BODY_BYTES:
             raise ClientError("Request too large.", 413)
         try:
-            body = json.loads(self.rfile.read(length) or b"{}")
+            return json.loads(self.rfile.read(length) or b"{}")
         except json.JSONDecodeError as err:
             raise ClientError(f"Request body is not valid JSON: {err}") from err
+
+    def route_post(self) -> None:
+        path = urlparse(self.path).path
+        if path not in ("/api/predict", "/api/lab/tokenize", "/api/lab/model"):
+            raise ClientError(f"No such endpoint: {self.path}", 404)
+        body = self.read_json_body()
         started = time.perf_counter()
-        out = api_predict(body, self.request_id)
+        if path == "/api/predict":
+            out = api_predict(body, self.request_id)
+        elif path == "/api/lab/tokenize":
+            out = lab.tokenize(clean_text(body))
+        else:
+            out = lab.run_model(clean_text(body))
         out["server_ms"] = round((time.perf_counter() - started) * 1000, 2)
         self.send_json(out)
 

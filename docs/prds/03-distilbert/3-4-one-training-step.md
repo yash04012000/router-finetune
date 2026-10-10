@@ -52,6 +52,10 @@ docs/math/fine-tuning.md       part 2: cross-entropy over 16 classes, gradient d
 - Loss falls from about 2.77 to under 0.05 on the fixed batch at lr 5e-5.
 - You can explain each of the four moves without looking.
 
+## UI
+
+Lab view: run the single-batch experiment live. Pick a learning rate, press Run, watch the loss curve fall (or jump around when the rate is too high), and see the 4 moves (forward, loss, backward, step) as numbers.
+
 ## Check your understanding
 
 1. Why do we call `optimizer.zero_grad()` every step?

@@ -51,6 +51,10 @@ Proposed experiments (small on purpose, about 8 runs of a few minutes each):
 - One table of all runs, and a chosen config justified by val macro F1 plus the noise estimate.
 - The final model is saved.
 
+## UI
+
+Lab view: the experiment table, the learning-rate-over-steps plot for each schedule, and train/val curves of any chosen run side by side.
+
 ## Check your understanding
 
 1. Why do we tune on val and not on test?

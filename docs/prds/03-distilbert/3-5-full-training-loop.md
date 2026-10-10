@@ -46,6 +46,10 @@ then 3, no scheduler yet (that is 3.7).
   seed, hardware and wall time.
 - You can point at the curves and say whether the model underfits, fits or overfits.
 
+## UI
+
+Lab view: the training curves (train loss, val loss, val accuracy and macro F1 per epoch) read from `results/training/distilbert.json`, with the best epoch marked.
+
 ## Check your understanding
 
 1. What is the difference between an epoch, a batch, and a step?

@@ -52,6 +52,7 @@ docs/math/fine-tuning.md     part 1: logits, softmax, what the head computes (fo
 - 66,965,776 parameters: body 66,362,880 (99.1%) + head 602,896 (**0.90%**; the first plan said "about 0.02%", which was wrong because the head has two layers).
 - Shapes for 8 messages x 36 tokens: ids (8, 36), hidden (8, 36, 768), `[CLS]` (8, 768), logits (8, 16). The head rebuilt by hand matches the model exactly.
 - Untrained, on 500 validation messages: accuracy **7.6%** (chance 6.25%), loss **2.782** (`ln 16` = 2.773), only 4 of 16 classes ever predicted.
+- **Lab tab** (UI): tokenizer view (3.2) and untrained-model view (3.3): shapes, [CLS] strip, logits and probabilities, parameter table. Backend `src/router/lab.py`, tests `tests/test_lab.py`.
 - 11 tests in `tests/test_model_head.py`. Notes: [docs/learning/step-3-3-model-and-head.md](../../learning/step-3-3-model-and-head.md).
 
 ## Check your understanding

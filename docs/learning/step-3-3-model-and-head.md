@@ -29,6 +29,26 @@ Re-run: `python -m scripts.explore_model` (first run downloads about 270 MB).
 - Train mode: the same input twice gives different logits (dropout). Eval mode: identical.
 - **Untrained model on 500 validation messages: accuracy 7.6%, loss 2.782**, against chance 6.25% and `ln(16) = 2.773`. It predicted only 4 of the 16 classes, `cash_withdrawal` for 58%.
 
+## The UI: the Lab tab
+
+Start it with `python -m scripts.serve`, open http://127.0.0.1:8000 and click **Lab**. Type any message and press **Look inside**. You get:
+
+1. **Tokenizer (step 3.2).** Your message as token chips with their ids. `[CLS]`/`[SEP]` are highlighted, a dotted edge marks a `##` continuation, and a gauge shows how
+   close you are to `max_len` 64 (try pasting a very long message: the tokens past 64 are struck through, exactly what training would cut).
+2. **The untrained model (step 3.3).** The five stages with real shapes (`input_ids [1 x L]`, `hidden [1 x L x 768]`, `[CLS] [1 x 768]`, `logits [1 x 16]`),
+   the first 96 numbers of the `[CLS]` vector as a heat strip, the check that the head rebuilt by hand equals the model, and two charts: **logits** (centre line = 0) and
+   **probabilities** (dashed line = 1/16). They are almost flat, which is what "knows nothing" looks like. After training they will have one long bar.
+3. **Where the parameters are.** The 66,965,776 parameters as a stacked bar and a table; the new head is the thin sliver at the end (0.90%).
+
+Things to try: change one word and watch the `[CLS]` strip change; type gibberish; paste a 200-word message; compare the logits of two very different messages (they hardly differ, because the
+head is random).
+
+Code: `src/router/lab.py` (the backend; `tokenize`, `model_info`, `run_model`), three endpoints in `scripts/serve.py` (`/api/lab/tokenize`, `/api/lab/model`, `/api/lab/info`), the Lab section of `ui/playground.html`,
+`tests/test_lab.py`. Needs PyTorch (`requirements-train.txt`); without it the tab shows a clear message (HTTP 503) and the rest of the playground still works.
+Each later step adds a view to this tab (see the plan).
+
+First-time cost: the first request loads the tokenizer and the model (about 6 s here); later ones take milliseconds. The first forward pass on the GPU is slower (about 117 ms) than later ones: warm-up.
+
 ## Questions and answers
 
 **1. Why is the head initialised randomly, and why can we not skip training it?**

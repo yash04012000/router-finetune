@@ -54,6 +54,8 @@ Raw endpoints for the same data: `GET /api/debug` and `GET /api/logs?n=200`.
 | `ValueError: ... has changed since it was frozen` | A `data/*.jsonl` file was edited | Debug tab, Data splits; `git diff data/` |
 | First request after start is slow (about 0.4 s) | The model is loaded on first use | Log line "first use of ...: loading it now" |
 | First prediction latency looks high (10+ ms vs 0.7 ms) | Warm-up of the first call | Compare with the second call; PRD 4 measures latency after 20 warm-up calls |
+| Lab tab says "Lab unavailable: PyTorch and transformers are not installed" (HTTP 503) | Training libraries missing, or the model not downloaded and no internet | `pip install -r requirements-train.txt`; run `python -m scripts.explore_model` once to download |
+| Lab: first click takes about 6 s | The tokenizer and model load on first use | Log lines `lab: tokenizer loaded`, `lab: untrained model loaded` |
 | Page says "Could not reach the server" | Server stopped or another port | Terminal where `scripts.serve` runs |
 | Port already in use | An old server is still running | `python -m scripts.serve --port 8001` |
 

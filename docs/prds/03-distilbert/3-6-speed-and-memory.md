@@ -44,6 +44,10 @@ src/router/baselines/distilbert.py   gets an option for the chosen precision and
 - A table of speed and VRAM for each setting is committed, and a default precision is chosen with reasons.
 - The 3-epoch run is repeated in the chosen setting with equal quality and shorter time.
 
+## UI
+
+Lab view: the speed and VRAM table for each precision / batch size, with a bar for peak memory against the 8 GB limit.
+
 ## Check your understanding
 
 1. Why does AdamW need more memory than the model weights alone?

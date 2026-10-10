@@ -45,6 +45,10 @@ TF-IDF's probabilities get the same treatment as an extra row, since the calibra
 - `calibrate.py` is tested, `T` is stored, ECE before and after is reported for val and test.
 - The playground shows calibrated confidence for DistilBERT.
 
+## UI
+
+Lab view: the reliability diagram before and after temperature scaling, with ECE, plus a slider for the temperature `T` that redraws the probabilities of a typed message.
+
 ## Check your understanding
 
 1. Why can temperature scaling change confidence but never accuracy?

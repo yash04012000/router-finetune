@@ -3,7 +3,7 @@
 You do not need to read every file, and not in alphabetical order. This page gives you a path. Pick the one that fits your time.
 
 > **Keep this page current.** Whenever a step adds files, add them to the map below (marked with the step).
-> Last updated: after step 3.3.
+> Last updated: after step 3.3 (Lab tab added).
 
 ## 0. What this project is, in two sentences
 
@@ -17,7 +17,7 @@ held-out messages, and learn how fine-tuning works along the way.
 |---|---|---|
 | **Tour** | 15 min | Read [00-story-so-far.md](00-story-so-far.md). Run `python -m scripts.serve`, open http://127.0.0.1:8000, type a few messages, open the Scoreboard tab. |
 | **Understand the pipeline** | 1-2 h | Follow section 3 below, top to bottom, running each command. |
-| **Learn fine-tuning** | days | Do the steps in [the DistilBERT plan](../prds/03-distilbert/00-index.md) one at a time. Each has a lesson script, a learning page with questions and answers, and (from 3.3) a maths page. |
+| **Learn fine-tuning** | days | Open the **Lab** tab in the playground alongside each step. Do the steps in [the DistilBERT plan](../prds/03-distilbert/00-index.md) one at a time. Each has a lesson script, a learning page with questions and answers, and (from 3.3) a maths page. |
 
 ## 2. The map: where things live
 
@@ -26,7 +26,7 @@ config/        What the project is about, as data: intents.yaml (the 16 intents)
 data/          The dataset: train/val/test .jsonl, splits.lock.json (fingerprints), DATACARD.md (what it is and its limits)
 src/router/    The library. Small, readable modules, each with a docstring saying what and why
 scripts/       Commands you run: python -m scripts.<name>
-tests/         Tests, and also the best examples of how each function is used
+tests/         Tests, and also the best examples of how each function is used (conftest.py starts a real server for the API tests)
 models/        Trained model files (TF-IDF is committed; DistilBERT weights are not)
 results/       Outputs: predictions/ (every model's answers), training/ (what each run recorded)
 ui/            The playground web page
@@ -82,6 +82,7 @@ Read each file's top docstring first; it is written for you. Run the command, th
 | `python -m scripts.serve` | The playground. Try the three tabs |
 | `src/router/serving.py` | **The model registry**: one entry per model. This is how new models appear in the UI |
 | `src/router/scoreboard.py` | Scores every predictions file on the test set |
+| `src/router/lab.py` | **The Lab tab's backend**: live views of the fine-tuning steps (tokenizer, untrained model, ...). Imports PyTorch lazily, so the rest works without it |
 | `scripts/serve.py`, `ui/playground.html` | The server and the page |
 | `docs/debugging.md`, `src/router/log.py` | Logs and request ids. Use the Debug tab when something looks wrong |
 
@@ -91,7 +92,7 @@ Read each file's top docstring first; it is written for you. Run the command, th
 |---|---|---|
 | 3.1 GPU | `scripts/check_gpu.py`, `requirements-train.txt` | [step-3-1](step-3-1-environment.md) |
 | 3.2 Tokenizer | `scripts/explore_tokenizer.py` | [step-3-2](step-3-2-tokenizer.md) |
-| 3.3 Model and head | `src/router/baselines/distilbert.py`, `scripts/explore_model.py`, `docs/math/fine-tuning.md` part 1 | [step-3-3](step-3-3-model-and-head.md) |
+| 3.3 Model and head | `src/router/baselines/distilbert.py`, `scripts/explore_model.py`, `docs/math/fine-tuning.md` part 1, **Lab tab** (`src/router/lab.py`) | [step-3-3](step-3-3-model-and-head.md) |
 | 3.4 to 3.9 | *added as we build them* | |
 
 For every step: **read the learning page first** (what and why), **run the lesson script** (see it), then **read the code** (a small file with comments),

@@ -20,6 +20,7 @@ by the time we reach the end.
 - **Every step leaves a learning page** in [`docs/learning/`](../../learning/README.md): what we did, a code map, how to re-run,
   what we saw, and the questions **with full answers**, plus any other question you ask along the way. There is also a
   [story so far](../../learning/00-story-so-far.md) and a [glossary](../../learning/glossary.md).
+- **Every step adds a view to the playground's Lab tab** (`python -m scripts.serve`, then **Lab**), so each idea can be tried on your own message. Steps 3.2 and 3.3 are there now.
 - **Maths goes in `docs/math/`**, with worked numbers checked against code, like the TF-IDF page.
 - **Nothing is pushed** until you say so. One small commit per step.
 - You can say "slower", "why?", or "skip ahead" at any moment. The plan below is a proposal.

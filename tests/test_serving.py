@@ -1,10 +1,8 @@
 """Tests for the playground: the model registry, the scoreboard, and the HTTP API."""
 
 import json
-import threading
 import urllib.error
 import urllib.request
-from http.server import ThreadingHTTPServer
 
 import pytest
 from scripts import serve
@@ -15,14 +13,6 @@ from router.serving import Registry
 needs_model = pytest.mark.skipif(
     not (Registry().infos["tfidf_lr"].available), reason="models/tfidf_lr.joblib not trained yet"
 )
-
-
-@pytest.fixture(scope="module")
-def base_url():
-    server = ThreadingHTTPServer(("127.0.0.1", 0), serve.Handler)  # port 0 = pick any free port
-    threading.Thread(target=server.serve_forever, daemon=True).start()
-    yield f"http://127.0.0.1:{server.server_address[1]}"
-    server.shutdown()
 
 
 def get(url):

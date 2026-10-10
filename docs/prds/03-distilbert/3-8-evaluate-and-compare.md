@@ -45,6 +45,10 @@ docs/prds/03-classical-baselines.md  results section updated with both models
 - A short written comparison exists: accuracy gain, latency cost (it will be much slower than TF-IDF), and where
   each model fails.
 
+## UI
+
+Lab view / Playground: DistilBERT appears next to TF-IDF in the Playground and Scoreboard; the Lab shows both models' top confusions side by side.
+
 ## Check your understanding
 
 1. Why is DistilBERT's latency measured with batch size 1 even though batching is faster?

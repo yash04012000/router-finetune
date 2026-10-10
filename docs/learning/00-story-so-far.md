@@ -38,7 +38,8 @@ The comparison axes: **accuracy, macro F1, latency (p50/p95), and cost per 1,000
 5. **Logging.** Every script logs to the console and `logs/router.log` (see [debugging.md](../debugging.md)).
 6. **PRD 3B plan.** DistilBERT split into nine small learning steps, one idea each. Steps 3.1 to 3.3 are done:
    [3.1](step-3-1-environment.md), [3.2](step-3-2-tokenizer.md), [3.3](step-3-3-model-and-head.md).
-7. **Learning notes.** This folder: story, glossary, a page per step with questions and answers, and a [reading roadmap](reading-roadmap.md) for newcomers.
+7. **The Lab tab** (after step 3.3). A tab in the playground that shows each fine-tuning idea live: your message as tokens, the untrained model's shapes, logits and probabilities, and where the parameters are. Each later step adds a view. Backend: `src/router/lab.py`.
+8. **Learning notes.** This folder: story, glossary, a page per step with questions and answers, and a [reading roadmap](reading-roadmap.md) for newcomers.
 
 ## 3. Decisions we made, and why
 
@@ -52,6 +53,7 @@ The comparison axes: **accuracy, macro F1, latency (p50/p95), and cost per 1,000
 | Do not `git push` until you say so | Portfolio repo; commits are local and small, with no AI attribution lines |
 | PyTorch CUDA build pinned in `requirements-train.txt` | A CPU-only PyTorch was installed and would have trained silently on the CPU (step 3.1) |
 | `max_len = 64` | Cuts only 0.29% of training messages (step 3.2) |
+| Lab views live in the same playground, not separate pages | One place to look at everything; PyTorch is imported lazily so the server still runs without it, and the Lab answers 503 with a clear message |
 | Class index = `intents.yaml` order, stored in the model as `id2label` | One order everywhere (logits, confusion matrix, saved files); a test checks it (step 3.3) |
 | Seed 42 set before the new head is created | The head's random start is then the same every run, so experiments are comparable (step 3.3) |
 | Check plans against code | The plan said the head was 0.02% of the model; the code showed 0.90%, and we corrected the plan (step 3.3) |
