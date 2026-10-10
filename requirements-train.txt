@@ -1,0 +1,13 @@
+# Training dependencies (DistilBERT now, LoRA later). Install AFTER the light requirements:
+#
+#   pip install -r requirements.txt
+#   pip install -r requirements-train.txt
+#
+# torch is the CUDA 13.0 build. The "+cu130" suffix is what makes pip pick it over the CPU-only wheel
+# on PyPI. It needs an NVIDIA driver that supports CUDA 13 (check with `nvidia-smi`, top right).
+# On a machine with an older driver, replace cu130 with cu128 or cu126 in the two places below
+# (see https://pytorch.org/get-started/locally/ for what exists).
+# Verify with:  python -m scripts.check_gpu
+--extra-index-url https://download.pytorch.org/whl/cu130
+torch==2.14.1+cu130
+transformers==5.19.0

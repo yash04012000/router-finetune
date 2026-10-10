@@ -1,6 +1,6 @@
 # 3.1 — Set up the GPU environment
 
-Status: Not started · Depends on: nothing · Next: [3.2](3-2-tokenizer.md)
+Status: Done · Depends on: nothing · Next: [3.2](3-2-tokenizer.md)
 
 ## The one idea
 
@@ -48,6 +48,14 @@ tests/test_gpu_env.py           skipped automatically when torch is not installe
    one of each?
 2. Why does the CPU-vs-GPU comparison need `torch.cuda.synchronize()` before reading the clock?
 3. Why is `requirements-train.txt` separate from `requirements.txt`?
+
+## Result
+
+- A **CPU-only** PyTorch (`2.14.1+cpu`) was already installed, so `cuda available` was `False`: exactly the risk below. We
+  replaced it with `torch==2.14.1+cu130` (the CUDA 13.0 build; the driver supports up to 13.1) and added `transformers==5.19.0`.
+- `python -m scripts.check_gpu` output: RTX 4060 Ti, 8.6 GB, compute capability 8.9, bf16 supported.
+  A 4096x4096 matrix multiply takes **393 ms on the CPU and 11 ms on the GPU (36x faster)**.
+- Tests: 56 pass; the GPU tests skip automatically where torch is missing (CI).
 
 ## Risks
 
