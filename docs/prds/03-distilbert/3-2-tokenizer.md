@@ -1,6 +1,6 @@
 # 3.2 — Tokenization
 
-Status: Not started · Depends on: 3.1 · Next: [3.3](3-3-model-and-head.md)
+Status: Done · Depends on: 3.1 · Next: [3.3](3-3-model-and-head.md)
 
 ## The one idea
 
@@ -52,6 +52,25 @@ No training code. The tokenizer is downloaded once from the Hugging Face Hub (ab
 1. Why does the tokenizer return an `attention_mask` as well as `input_ids`?
 2. A message is 20 tokens and `max_len` is 16. What happens to it, and what would we lose?
 3. Why is a misspelled word less harmful here than for a plain "one id per word" approach?
+
+## Result
+
+Measured on the 9,371 training messages (tokens include `[CLS]` and `[SEP]`), saved in `results/training/tokenizer_lengths.json`:
+
+| | mean | median | p95 | p99 | max |
+|---|---|---|---|---|---|
+| tokens | 16.0 | 13 | 36 | 53 | 98 |
+
+| max_len | 16 | 24 | 32 | 48 | **64** | 128 |
+|---|---|---|---|---|---|---|
+| messages cut | 27.8% | 11.8% | 6.7% | 1.4% | **0.29%** | 0% |
+
+**Decision: `max_len = 64`.** It cuts only 0.29% of messages (about 27 of 9,371), and only the tail of an unusually long one.
+128 would add nothing but a larger worst-case batch. 32 would cut one message in 15, which is too many. Because we pad each batch
+only to its own longest message (dynamic padding, step 3.5), a large `max_len` costs nothing for short messages.
+
+Other things seen: `recieved` becomes `rec ##ie ##ved` while `received` is one piece (the model still gets usable pieces, never `[UNK]`); in a padded batch
+of 4, one 36-token message forced 32 `[PAD]` tokens onto a 7-token one, which is why batches are padded per batch, not to a global maximum.
 
 ## Notes
 
